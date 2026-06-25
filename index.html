@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Ludiverse"/>
+<meta name="theme-color" content="#0d1628"/>
+<link rel="manifest" href="./manifest.json"/>
+<link rel="apple-touch-icon" href="./icon-192.png"/>
+<title>Le Ludiverse</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --navy:#111d38;--navy2:#0d1628;--navy3:#1a2744;
+  --gold:#f5c842;--gold2:#e8a820;
+  --purple2:#8b5bc8;--purple3:#c4a0f0;
+  --green:#4caf7d;--green2:#3a9463;
+  --text:#e8eaf6;--text2:#8899bb;
+  --card:#1a2a4a;--border:rgba(245,200,66,.15);--radius:14px;
+}
+html,body{height:100%;background:var(--navy2);color:var(--text);font-family:'Nunito',sans-serif;overflow:hidden}
+.app{max-width:430px;margin:0 auto;height:100vh;height:100dvh;display:flex;flex-direction:column}
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px}
+
+.header{background:linear-gradient(180deg,var(--navy2),var(--navy3));padding:env(safe-area-inset-top,16px) 16px 12px;padding-top:max(env(safe-area-inset-top),16px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0}
+.header-logo{width:42px;height:42px;border-radius:50%;border:2px solid var(--gold);flex-shrink:0;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:22px}
+.header-title{font-family:'Bangers',cursive;font-size:22px;color:var(--gold);letter-spacing:1.5px;line-height:1}
+.header-sub{font-size:11px;color:var(--text2);margin-top:1px}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.notif-btn{background:transparent;border:1px solid var(--border);border-radius:8px;padding:6px 9px;cursor:pointer;font-size:14px;color:var(--text2)}
+.notif-btn.on{border-color:var(--gold);color:var(--gold)}
+
+.nav{display:flex;background:var(--navy2);border-top:1px solid var(--border);flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 2px 7px;cursor:pointer;color:var(--text2);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;border-top:2px solid transparent;transition:all .2s;gap:2px;user-select:none;position:relative}
+.nav-item.active{color:var(--gold);border-top-color:var(--gold)}
+.nav-icon{font-size:18px;line-height:1}
+.nav-badge{position:absolute;top:6px;right:calc(50% - 18px);background:#e84b4b;color:white;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;min-width:16px;text-align:center}
+
+.section{display:none;padding:14px 14px 0}.section.active{display:block}
+
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+.stat-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 13px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(245,200,66,.04),transparent 60%)}
+.stat-card.green{border-color:rgba(76,175,125,.3)}
+.stat-card.green::before{background:linear-gradient(135deg,rgba(76,175,125,.06),transparent 60%)}
+.stat-card.red{border-color:rgba(232,75,75,.3)}
+.stat-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
+.stat-value{font-family:'Bangers',cursive;font-size:26px;color:var(--gold);letter-spacing:1px;line-height:1}
+.stat-value.green{color:var(--green)}
+.stat-value.red{color:#e84b4b}
+.stat-sub{font-size:11px;color:var(--text2);margin-top:3px}
+
+/* ALERT BANNER */
+.alert-banner{background:linear-gradient(135deg,rgba(232,75,75,.15),rgba(232,75,75,.05));border:1px solid rgba(232,75,75,.35);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px}
+.alert-banner-title{font-size:13px;font-weight:800;color:#f08080;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.alert-item{font-size:12px;color:var(--text2);padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);display:flex;justify-content:space-between;align-items:center}
+.alert-item:last-child{border-bottom:none}
+.alert-item-name{font-weight:700;color:var(--text)}
+.alert-age{font-size:10px;color:#f08080}
+
+.search-bar{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:9px 12px;font-size:14px;font-family:'Nunito',sans-serif;color:var(--text);width:100%;outline:none;margin-bottom:12px}
+.search-bar::placeholder{color:var(--text2)}
+.search-bar:focus{border-color:var(--gold2)}
+
+.filter-row{display:flex;gap:8px;margin-bottom:12px}
+select{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:8px 10px;font-size:13px;font-family:'Nunito',sans-serif;flex:1;outline:none;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='%238899bb'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+
+.game-list{display:flex;flex-direction:column;gap:8px}
+.game-card{background:var(--card);border:1px solid rgba(107,63,160,.35);border-radius:var(--radius);padding:12px 14px;transition:border-color .2s}
+.game-card.published{border-color:rgba(76,175,125,.4)}
+.game-card.overdue{border-color:rgba(232,75,75,.4)}
+.game-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.game-title{font-size:14px;font-weight:800;color:var(--text);line-height:1.2}
+.game-price{font-family:'Bangers',cursive;font-size:17px;color:var(--gold);white-space:nowrap;flex-shrink:0}
+.game-meta{font-size:11px;color:var(--text2);margin-top:3px}
+.tags{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.tag{font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.3px}
+.tag-ed{background:rgba(107,63,160,.3);color:var(--purple3);border:1px solid rgba(139,91,200,.35)}
+.tag-mo{background:rgba(245,200,66,.12);color:var(--gold);border:1px solid rgba(245,200,66,.25)}
+.tag-pub{background:rgba(76,175,125,.2);color:#7dd4a8;border:1px solid rgba(76,175,125,.35)}
+.tag-nopub{background:rgba(232,75,75,.15);color:#f08080;border:1px solid rgba(232,75,75,.25)}
+.tag-wait{background:rgba(245,200,66,.1);color:var(--gold);border:1px solid rgba(245,200,66,.2)}
+.game-note-text{font-size:11px;color:var(--text2);margin-top:7px;font-style:italic;border-left:2px solid var(--purple2);padding-left:8px}
+.game-actions{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+.btn-ghost{font-size:11px;font-weight:700;padding:5px 11px;cursor:pointer;border:1px solid rgba(255,255,255,.12);border-radius:7px;background:transparent;color:var(--text2);font-family:'Nunito',sans-serif}
+.btn-ghost:active{background:rgba(255,255,255,.08)}
+.btn-ghost.red{color:#f08080;border-color:rgba(240,128,128,.25)}
+.btn-ghost.green{color:#7dd4a8;border-color:rgba(76,175,125,.3)}
+.btn-ghost.gold{color:var(--gold);border-color:rgba(245,200,66,.3)}
+
+/* MODAL EDIT */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:flex;align-items:flex-end;justify-content:center}
+.modal{background:var(--navy3);border-radius:20px 20px 0 0;padding:20px 16px 32px;width:100%;max-width:430px;max-height:85vh;overflow-y:auto}
+.modal-title{font-family:'Bangers',cursive;font-size:20px;color:var(--gold);letter-spacing:1px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{font-size:20px;cursor:pointer;color:var(--text2);background:none;border:none}
+
+.form-card{background:var(--card);border:1px solid rgba(107,63,160,.35);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+.form-title{font-family:'Bangers',cursive;font-size:20px;color:var(--gold);letter-spacing:1px;margin-bottom:14px}
+.field{margin-bottom:11px}
+.field label{display:block;font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.field input{width:100%;background:var(--navy2);color:var(--text);border:1px solid rgba(245,200,66,.18);border-radius:8px;padding:9px 12px;font-size:16px;font-family:'Nunito',sans-serif;outline:none}
+.field input:focus{border-color:var(--gold2)}
+.field input::placeholder{color:var(--text2)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.btn-primary{width:100%;padding:12px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy2);border:none;border-radius:10px;font-size:15px;font-family:'Bangers',cursive;letter-spacing:1px;cursor:pointer;margin-top:4px}
+
+.import-box{background:var(--card);border:1px dashed rgba(245,200,66,.3);border-radius:var(--radius);padding:20px 16px;text-align:center;margin-bottom:14px;cursor:pointer}
+.import-icon{font-size:30px;margin-bottom:8px}
+.import-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
+.import-sub{font-size:12px;color:var(--text2)}
+#csv-input{display:none}
+
+.chart-section{margin-bottom:16px}
+.chart-title{font-family:'Bangers',cursive;font-size:17px;color:var(--gold);letter-spacing:.8px;margin-bottom:10px}
+.chart-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+
+.editor-card{background:var(--card);border:1px solid rgba(107,63,160,.3);border-radius:var(--radius);padding:13px 14px;margin-bottom:8px}
+.editor-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px}
+.editor-name{font-size:14px;font-weight:800;color:var(--text)}
+.editor-sub{font-size:11px;color:var(--text2);margin-top:2px}
+.editor-total{font-family:'Bangers',cursive;font-size:19px;color:var(--gold);text-align:right}
+.editor-count{font-size:11px;color:var(--text2);text-align:right}
+.bar-bg{height:4px;background:rgba(255,255,255,.07);border-radius:2px}
+.bar-fill{height:4px;background:linear-gradient(90deg,var(--purple2),var(--gold));border-radius:2px;transition:width .5s ease}
+.bar-fill-green{height:4px;background:linear-gradient(90deg,var(--green2),var(--green));border-radius:2px}
+
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chip{font-size:12px;font-weight:700;padding:5px 13px;border-radius:20px;cursor:pointer;border:1px solid rgba(245,200,66,.22);background:transparent;color:var(--text2);font-family:'Nunito',sans-serif}
+.chip.on{background:var(--gold);color:var(--navy2);border-color:var(--gold)}
+
+.export-row{display:flex;gap:8px;margin-bottom:14px}
+.btn-export{flex:1;padding:10px;background:rgba(245,200,66,.1);color:var(--gold);border:1px solid rgba(245,200,66,.25);border-radius:9px;font-size:12px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer}
+
+.empty{text-align:center;padding:36px 16px;color:var(--text2);font-size:13px}
+.empty-icon{font-size:36px;display:block;margin-bottom:10px;opacity:.3}
+
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--gold);color:var(--navy2);padding:9px 20px;border-radius:30px;font-size:13px;font-weight:700;z-index:200;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* TOURNOI */
+.ranking-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.ranking-row{background:var(--card);border:1px solid rgba(107,63,160,.25);border-radius:var(--radius);padding:12px 14px;display:flex;align-items:center;gap:12px}
+.ranking-pos{font-family:'Bangers',cursive;font-size:22px;color:var(--text2);width:28px;text-align:center;flex-shrink:0}
+.ranking-pos.p1{color:var(--gold)}.ranking-pos.p2{color:#c0c0c0}.ranking-pos.p3{color:#cd7f32}
+.ranking-info{flex:1}
+.ranking-name{font-size:15px;font-weight:800;color:var(--text)}
+.ranking-detail{font-size:11px;color:var(--text2);margin-top:2px}
+.ranking-bar-wrap{margin-top:6px}
+.ranking-wins{font-family:'Bangers',cursive;font-size:22px;color:var(--gold);flex-shrink:0;text-align:center}
+.ranking-wins-label{font-size:10px;font-family:'Nunito',sans-serif;color:var(--text2)}
+
+.player-stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+.player-stat-card{background:var(--card);border:1px solid rgba(107,63,160,.3);border-radius:var(--radius);padding:12px}
+.player-stat-name{font-family:'Bangers',cursive;font-size:17px;letter-spacing:.8px;margin-bottom:8px}
+.player-stat-row{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.player-stat-row:last-child{border-bottom:none}
+.player-stat-val{font-weight:800;color:var(--text)}
+
+.streak-card{background:var(--card);border:1px solid rgba(245,200,66,.25);border-radius:var(--radius);padding:13px 14px;margin-bottom:10px}
+.streak-title{font-size:13px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:6px}
+.streak-sub{font-size:11px;color:var(--text2);margin-top:4px}
+
+.session-card{background:var(--card);border:1px solid rgba(107,63,160,.3);border-radius:var(--radius);padding:13px 14px;margin-bottom:8px}
+.session-date{font-family:'Bangers',cursive;font-size:16px;color:var(--gold);letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.session-date-sub{font-size:11px;font-weight:700;color:var(--text2);font-family:'Nunito',sans-serif}
+.session-game-row{padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.session-game-row:last-child{border-bottom:none}
+.session-game-name{font-size:13px;font-weight:700;color:var(--text)}
+.session-game-winners{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+.winner-chip{font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px}
+.wc-papa{background:rgba(79,163,209,.2);color:#7ec8e3;border:1px solid rgba(79,163,209,.3)}
+.wc-maman{background:rgba(232,112,64,.2);color:#f0a882;border:1px solid rgba(232,112,64,.3)}
+.wc-chloé{background:rgba(92,184,92,.2);color:#90d490;border:1px solid rgba(92,184,92,.3)}
+.wc-camille{background:rgba(139,91,200,.2);color:var(--purple3);border:1px solid rgba(139,91,200,.3)}
+.wc-default{background:rgba(245,200,66,.15);color:var(--gold);border:1px solid rgba(245,200,66,.25)}
+
+.add-session-form{background:var(--card);border:1px solid rgba(107,63,160,.35);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+.partie-row{background:var(--navy2);border-radius:9px;padding:10px;margin-bottom:8px;border:1px solid rgba(255,255,255,.06)}
+.partie-row-title{font-size:11px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
+.btn-add-partie{width:100%;padding:9px;background:rgba(139,91,200,.15);color:var(--purple3);border:1px solid rgba(139,91,200,.3);border-radius:8px;font-size:12px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;margin-bottom:12px}
+.btn-remove{font-size:11px;padding:3px 8px;background:transparent;border:1px solid rgba(240,128,128,.2);color:#f08080;border-radius:6px;cursor:pointer;font-family:'Nunito',sans-serif}
+
+.install-banner{background:linear-gradient(135deg,var(--purple2),var(--navy));border:1px solid rgba(139,91,200,.5);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.install-banner-text{flex:1;font-size:12px;color:var(--text)}
+.install-banner-text strong{color:var(--gold);display:block;font-size:13px;margin-bottom:2px}
+.btn-install{background:var(--gold);color:var(--navy2);border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;white-space:nowrap}
+
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.section-head-title{font-family:'Bangers',cursive;font-size:17px;color:var(--gold);letter-spacing:.5px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-logo">🎲</div>
+    <div>
+      <div class="header-title">Le Ludiverse</div>
+      <div class="header-sub">Suivi des jeux presse ✦</div>
+    </div>
+    <div class="header-right">
+      <button class="notif-btn" id="notif-btn" onclick="toggleNotifications()" title="Notifications">🔔</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- LISTE -->
+    <div id="sec-liste" class="section active">
+      <div id="install-zone"></div>
+      <div id="alert-zone"></div>
+      <input class="search-bar" id="search" placeholder="🔍 Rechercher un jeu…" oninput="renderListe()"/>
+      <div class="filter-row">
+        <select id="f-month" onchange="renderListe()"><option value="">✦ Tous les mois</option></select>
+        <select id="f-editor" onchange="renderListe()"><option value="">✦ Tous les éditeurs</option></select>
+        <select id="f-status" onchange="renderListe()">
+          <option value="">✦ Tous</option>
+          <option value="published">✅ Publié</option>
+          <option value="pending">⏳ En attente</option>
+        </select>
+      </div>
+      <div class="stat-grid" id="stats-liste"></div>
+      <div class="game-list" id="game-list"></div>
+    </div>
+
+    <!-- STATS REVIEW -->
+    <div id="sec-review" class="section">
+      <div class="chips" id="rv-year-chips"></div>
+      <div class="stat-grid-3" id="rv-stats"></div>
+      <div class="chart-section">
+        <div class="chart-title">✦ Taux de review par mois</div>
+        <div class="chart-wrap"><canvas id="c-review-rate" height="200"></canvas></div>
+      </div>
+      <div class="chart-section">
+        <div class="chart-title">✦ Publié vs En attente</div>
+        <div class="chart-wrap"><canvas id="c-review-pie" height="220"></canvas></div>
+      </div>
+      <div class="section-head">
+        <div class="section-head-title">⏳ En attente de review</div>
+      </div>
+      <div id="rv-pending-list"></div>
+    </div>
+
+    <!-- GRAPHIQUES -->
+    <div id="sec-graphs" class="section">
+      <div class="chips" id="graph-chips"></div>
+      <div class="chart-section">
+        <div class="chart-title">✦ Valeur par éditeur</div>
+        <div class="chart-wrap"><canvas id="c-editor" height="260"></canvas></div>
+      </div>
+      <div class="chart-section">
+        <div class="chart-title">✦ Jeux reçus par mois</div>
+        <div class="chart-wrap"><canvas id="c-month" height="200"></canvas></div>
+      </div>
+      <div class="chart-section">
+        <div class="chart-title">✦ Valeur mensuelle (€)</div>
+        <div class="chart-wrap"><canvas id="c-value" height="200"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ÉDITEURS -->
+    <div id="sec-editors" class="section">
+      <div class="stat-grid" id="stats-editors"></div>
+      <div class="chips" id="ed-chips"></div>
+      <div id="editor-list"></div>
+    </div>
+
+    <!-- AJOUTER -->
+    <div id="sec-add" class="section">
+      <div class="form-card">
+        <div class="form-title">🚀 Nouveau jeu</div>
+        <div class="field"><label>Nom du jeu *</label><input id="i-nom" placeholder="Ex: Wingspan" autocomplete="off"/></div>
+        <div class="row2">
+          <div class="field"><label>Éditeur *</label><input id="i-ed" list="ed-list" placeholder="Ex: Iello" autocomplete="off"/><datalist id="ed-list"></datalist></div>
+          <div class="field"><label>Prix (€)</label><input id="i-prix" type="number" placeholder="0.00" step="0.01" min="0"/></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Mois reçu</label><select id="i-mois"></select></div>
+          <div class="field"><label>Joueurs</label><input id="i-joueurs" placeholder="2–5" autocomplete="off"/></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Âge min.</label><input id="i-age" placeholder="10+" autocomplete="off"/></div>
+          <div class="field"><label>Note /5 ⭐</label>
+            <select id="i-note"><option value="">–</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+          </div>
+        </div>
+        <div class="field"><label>Remarques</label><input id="i-notes" placeholder="Coup de cœur, à reviewer…" autocomplete="off"/></div>
+        <button class="btn-primary" onclick="addGame()">🎲 Enregistrer</button>
+      </div>
+      <div class="import-box" onclick="document.getElementById('csv-input').click()">
+        <input type="file" id="csv-input" accept=".csv" onchange="importCSV(this)"/>
+        <div class="import-icon">📂</div>
+        <div class="import-title">Importer un CSV</div>
+        <div class="import-sub">Format : MOIS, ÉDITEURS, JEUX, PRIX</div>
+      </div>
+      <div class="export-row">
+        <button class="btn-export" onclick="exportCSV()">⬇ Export CSV</button>
+        <button class="btn-export" onclick="exportJSON()">⬇ Sauvegarde JSON</button>
+      </div>
+    </div>
+
+    <!-- TOURNOI -->
+    <div id="sec-tournoi" class="section">
+      <div class="chips" id="t-year-chips"></div>
+      <div class="chart-title">🏆 Classement</div>
+      <div class="ranking-list" id="t-ranking"></div>
+      <div class="chart-section">
+        <div class="chart-title">✦ Victoires par joueur</div>
+        <div class="chart-wrap"><canvas id="c-tournoi" height="200"></canvas></div>
+      </div>
+      <div class="chart-section">
+        <div class="chart-title">✦ Évolution mensuelle</div>
+        <div class="chart-wrap"><canvas id="c-tournoi-monthly" height="200"></canvas></div>
+      </div>
+      <div class="chart-title" style="margin-bottom:10px">🔥 Séries en cours</div>
+      <div id="t-streaks" style="margin-bottom:16px"></div>
+      <div class="chart-title" style="margin-bottom:10px">🎲 Stats par joueur</div>
+      <div class="player-stats-grid" id="t-player-stats"></div>
+      <div class="section-head">
+        <div class="section-head-title">📅 Sessions</div>
+        <button class="btn-ghost gold" onclick="showAddSession()">+ Ajouter</button>
+      </div>
+      <div id="t-sessions"></div>
+      <div id="add-session-panel" style="display:none">
+        <div class="add-session-form">
+          <div class="form-title">📅 Nouvelle session</div>
+          <div class="field"><label>Date</label><input type="date" id="t-date"/></div>
+          <div id="parties-container"></div>
+          <button class="btn-add-partie" onclick="addPartieRow()">+ Ajouter une partie</button>
+          <button class="btn-primary" onclick="saveSession()">🏆 Enregistrer</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="nav">
+    <div class="nav-item active" onclick="showSection('liste',this)"><div class="nav-icon">☰</div>Liste</div>
+    <div class="nav-item" onclick="showSection('review',this)" id="nav-review"><div class="nav-icon">✍️</div>Reviews</div>
+    <div class="nav-item" onclick="showSection('graphs',this)"><div class="nav-icon">📊</div>Graphs</div>
+    <div class="nav-item" onclick="showSection('editors',this)"><div class="nav-icon">🏢</div>Éditeurs</div>
+    <div class="nav-item" onclick="showSection('add',this)"><div class="nav-icon">＋</div>Ajouter</div>
+    <div class="nav-item" onclick="showSection('tournoi',this)"><div class="nav-icon">🏆</div>Tournoi</div>
+  </nav>
+</div>
+
+<!-- MODAL EDIT -->
+<div class="modal-overlay" id="edit-modal" style="display:none" onclick="closeEditModal(event)">
+  <div class="modal">
+    <div class="modal-title">✏️ Modifier le jeu <button class="modal-close" onclick="closeEditModal()">✕</button></div>
+    <div class="field"><label>Nom du jeu</label><input id="e-nom" autocomplete="off"/></div>
+    <div class="row2">
+      <div class="field"><label>Éditeur</label><input id="e-ed" autocomplete="off"/></div>
+      <div class="field"><label>Prix (€)</label><input id="e-prix" type="number" step="0.01"/></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Mois reçu</label><select id="e-mois"></select></div>
+      <div class="field"><label>Joueurs</label><input id="e-joueurs" autocomplete="off"/></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Âge min.</label><input id="e-age" autocomplete="off"/></div>
+      <div class="field"><label>Note /5 ⭐</label>
+        <select id="e-note"><option value="">–</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+      </div>
+    </div>
+    <div class="field"><label>Remarques</label><input id="e-notes" autocomplete="off"/></div>
+    <div class="field"><label>Statut review</label>
+      <select id="e-published">
+        <option value="0">⏳ Non publié</option>
+        <option value="1">✅ Publié</option>
+      </select>
+    </div>
+    <div class="field" id="e-pubdate-field"><label>Date de publication</label><input type="date" id="e-pubdate"/></div>
+    <button class="btn-primary" onclick="saveEdit()">💾 Enregistrer</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;showInstallBanner();});
+function showInstallBanner(){
+  const z=document.getElementById('install-zone');
+  z.innerHTML=`<div class="install-banner"><div class="install-banner-text"><strong>📲 Installer l'appli</strong>Ajoute Le Ludiverse sur ton écran d'accueil</div><button class="btn-install" onclick="installApp()">Installer</button></div>`;
+}
+function installApp(){if(!deferredPrompt)return;deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;document.getElementById('install-zone').innerHTML='';});}
+
+const MONTHS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const KEY='ludiverse_v4';
+const TKEY='ludiverse_tournoi_v1';
+const PAL=['#f5c842','#8b5bc8','#4fa3d1','#e87040','#5cb85c','#e84b8a','#40c8b0','#c87840','#7b68ee','#d4af37'];
+const PCOLORS={'Papa':'#4fa3d1','Maman':'#e87040','Chloé':'#5cb85c','Camille':'#8b5bc8'};
+const PLAYER_CSS={'papa':'wc-papa','maman':'wc-maman','chloé':'wc-chloé','camille':'wc-camille'};
+const REVIEW_DELAY_DAYS=30;
+
+let games=[], tournoi=[];
+let gYear=new Date().getFullYear(), eYear=new Date().getFullYear(), tYear=new Date().getFullYear(), rvYear=new Date().getFullYear();
+let cEd=null,cMo=null,cVal=null,cTournoi=null,cTournoiM=null,cRvRate=null,cRvPie=null;
+let editingId=null, partieCount=0;
+let notifEnabled=false;
+
+// ── DONNÉES ──────────────────────────────────────────────────────
+const INIT=[
+  {id:'csv1',nom:'Brilliant',editeur:'Ravensburger',prix:'14.5',mois:'2026-01',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv2',nom:'Dragonniers',editeur:'Super Meeple',prix:'36.9',mois:'2026-01',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv3',nom:'Expo 1889',editeur:'Chèvre Éditions',prix:'22.5',mois:'2026-01',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv4',nom:"C'est carré",editeur:'Chèvre Éditions',prix:'14.5',mois:'2026-01',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv5',nom:"Time's up express",editeur:'Asmodée',prix:'9.9',mois:'2026-01',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv6',nom:'Dewan',editeur:'Asmodée',prix:'31.5',mois:'2026-01',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv7',nom:'Heredity',editeur:'Black Rock Games',prix:'44.95',mois:'2026-01',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv8',nom:'Les mioches',editeur:'Black Rock Games',prix:'10.9',mois:'2026-01',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv9',nom:'Loup Garou Special',editeur:'Ravensburger',prix:'17.9',mois:'2026-01',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv10',nom:'Loup Garou Special',editeur:'Ravensburger',prix:'17.9',mois:'2026-01',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv11',nom:'Brilliant',editeur:'Ravensburger',prix:'14.5',mois:'2026-01',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv12',nom:'Les enfants de la résistance',editeur:'Iello',prix:'31.9',mois:'2026-01',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv13',nom:'La bohème',editeur:'Iello',prix:'32.9',mois:'2026-01',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv14',nom:'Rail Road Tiles',editeur:'Iello',prix:'29.9',mois:'2026-01',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv15',nom:'La colère de la montagne de feu',editeur:'Iello',prix:'26.9',mois:'2026-01',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv16',nom:'Restart',editeur:'Iello',prix:'29.9',mois:'2026-02',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv17',nom:'Cartaventura Exils',editeur:'Blam!',prix:'12',mois:'2026-02',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv18',nom:'Chouineurs',editeur:'Blam!',prix:'11.9',mois:'2026-02',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv19',nom:'Archipels',editeur:'Tiki',prix:'25.9',mois:'2026-02',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv20',nom:'Lost Cities',editeur:'Iello',prix:'14',mois:'2026-02',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv21',nom:'Kouba',editeur:'Asmodée',prix:'20',mois:'2026-02',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv22',nom:'Spyworld',editeur:"Don't Panic Games",prix:'23.9',mois:'2026-02',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv23',nom:'Belaad',editeur:"Don't Panic Games",prix:'49.9',mois:'2026-02',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv24',nom:'Mon premier deckbuilding',editeur:"Don't Panic Games",prix:'13.5',mois:'2026-02',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv25',nom:'Opération Zèbre cuisine',editeur:'Big Moustache',prix:'7.5',mois:'2026-02',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv26',nom:'Opération Zèbre BD',editeur:'Big Moustache',prix:'7.5',mois:'2026-02',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv27',nom:'Visions',editeur:'Oldchap Games',prix:'15.9',mois:'2026-02',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv28',nom:'Coffret Picsou',editeur:'Lorcana',prix:'29.95',mois:'2026-02',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv29',nom:'Collection Stitch',editeur:'Lorcana',prix:'24.9',mois:'2026-02',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv30',nom:'Extension Curse',editeur:'Black Rock Games',prix:'16.5',mois:'2026-02',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv31',nom:'Echoes',editeur:'Ravensburger',prix:'10.5',mois:'2026-03',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv32',nom:'Sagaland',editeur:'Ravensburger',prix:'17.9',mois:'2026-03',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv33',nom:'Détective Charlie',editeur:'Iello',prix:'21.9',mois:'2026-03',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv34',nom:'Vilainous',editeur:'Ravensburger',prix:'27.9',mois:'2026-03',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+  {id:'csv35',nom:'Hisse et Ho !',editeur:'Black Rock Games',prix:'10.9',mois:'2026-03',joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''},
+];
+
+const INIT_TOURNOI=[
+  {id:'t1',date:'2025-03-09',annee:2025,parties:[{jeu:'Oh my pigeons !',gagnants:['Papa','Chloé'],score:8},{jeu:'Symbiose',gagnants:['Maman','Papa'],score:18},{jeu:'Bim Bim Boule',gagnants:['Papa','Chloé','Camille'],score:13},{jeu:'Roi et compagnie',gagnants:['Chloé','Chloé','Camille'],score:9},{jeu:'Trésors Légendaires',gagnants:['Maman'],score:0}]},
+  {id:'t2',date:'2025-03-16',annee:2025,parties:[{jeu:'Paper World',gagnants:['Maman'],score:0},{jeu:'Symbiose',gagnants:['Camille'],score:0},{jeu:'Arsh Mallows',gagnants:['Maman'],score:0}]},
+  {id:'t3',date:'2025-04-06',annee:2025,parties:[{jeu:'Double Seven',gagnants:['Papa','Camille'],score:0}]},
+  {id:'t4',date:'2025-04-15',annee:2025,parties:[{jeu:'PolyNimaux',gagnants:['Papa','Maman'],score:0}]},
+  {id:'t5',date:'2025-04-16',annee:2025,parties:[{jeu:'Double Seven',gagnants:['Maman','Maman'],score:0}]},
+  {id:'t6',date:'2025-04-17',annee:2025,parties:[{jeu:'Happy Mochi',gagnants:['Maman'],score:0},{jeu:'PolyNimaux',gagnants:['Maman'],score:0}]},
+  {id:'t7',date:'2025-04-26',annee:2025,parties:[{jeu:'Petits pois',gagnants:['Maman'],score:0},{jeu:'Polynimaux',gagnants:['Chloé','Chloé'],score:0}]},
+  {id:'t8',date:'2025-04-27',annee:2025,parties:[{jeu:'Jungo',gagnants:['Maman'],score:0},{jeu:'River Valley',gagnants:['Camille','Camille'],score:0},{jeu:'PolyNimaux',gagnants:['Maman','Papa'],score:0},{jeu:'Double Seven',gagnants:['Maman'],score:0}]},
+  {id:'t9',date:'2025-05-07',annee:2025,parties:[{jeu:'Flip7',gagnants:['Papa'],score:0}]},
+  {id:'t10',date:'2025-05-14',annee:2025,parties:[{jeu:'Flip7',gagnants:['Chloé'],score:0}]},
+  {id:'t11',date:'2025-05-17',annee:2025,parties:[{jeu:'Camarades',gagnants:['Camille','Maman','Chloé'],score:0}]},
+  {id:'t12',date:'2025-05-18',annee:2025,parties:[{jeu:'Flip7',gagnants:['Camille','Chloé'],score:0}]},
+  {id:'t13',date:'2025-06-01',annee:2025,parties:[{jeu:'Kingdomino',gagnants:['Maman'],score:0}]},
+  {id:'t14',date:'2025-06-08',annee:2025,parties:[{jeu:'Châteaux de sable',gagnants:['Maman'],score:0}]},
+  {id:'t15',date:'2025-06-09',annee:2025,parties:[{jeu:'Double Seven',gagnants:['Chloé'],score:0}]},
+  {id:'t16',date:'2025-06-14',annee:2025,parties:[{jeu:'Flip7',gagnants:['Chloé','Camille'],score:0}]},
+  {id:'t17',date:'2025-08-02',annee:2025,parties:[{jeu:'Cookie party',gagnants:['Maman'],score:0}]},
+  {id:'t18',date:'2025-09-20',annee:2025,parties:[{jeu:'Toko Maja',gagnants:['Chloé'],score:0}]},
+  {id:'t19',date:'2025-11-14',annee:2025,parties:[{jeu:'Taco chat',gagnants:['Maman'],score:0},{jeu:'Lucky numbers',gagnants:['Camille','Chloé'],score:0}]},
+  {id:'t20',date:'2025-11-15',annee:2025,parties:[{jeu:'Lucky numbers',gagnants:['Papa'],score:0}]},
+];
+
+function load(){
+  try{const s=localStorage.getItem(KEY);if(s)games=JSON.parse(s);else{games=INIT.map(g=>({...g}));localStorage.setItem(KEY,JSON.stringify(games));}}catch(e){games=INIT.map(g=>({...g}));}
+  try{const t=localStorage.getItem(TKEY);if(t)tournoi=JSON.parse(t);else{tournoi=[...INIT_TOURNOI];localStorage.setItem(TKEY,JSON.stringify(tournoi));}}catch(e){tournoi=[...INIT_TOURNOI];}
+  notifEnabled=localStorage.getItem('notif_enabled')==='1';
+  updateNotifBtn();
+  init();
+  checkAlerts();
+  scheduleNotifications();
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(games));}catch(e){}}
+function saveTournoi(){try{localStorage.setItem(TKEY,JSON.stringify(tournoi));}catch(e){}}
+function px(g){return parseFloat(g.prix)||0;}
+function fmtM(m){if(!m)return'';const[y,mo]=m.split('-');return`${MONTHS[parseInt(mo)-1]} ${y}`;}
+function fmtDate(d){if(!d)return'';const[y,m,j]=d.split('-');return`${j}/${m}/${y}`;}
+function stars(n){return n?'⭐'.repeat(parseInt(n)):'';}
+function daysSince(mois){
+  if(!mois)return 0;
+  const[y,m]=mois.split('-');
+  const d=new Date(parseInt(y),parseInt(m)-1,1);
+  return Math.floor((Date.now()-d)/(1000*60*60*24));
+}
+
+function toast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+function init(){
+  const now=new Date();
+  [document.getElementById('i-mois'),document.getElementById('e-mois')].forEach(ms=>{
+    ms.innerHTML='';
+    for(let y=now.getFullYear();y>=now.getFullYear()-3;y--){
+      for(let m=11;m>=0;m--){
+        if(y===now.getFullYear()&&m>now.getMonth())continue;
+        const o=document.createElement('option');
+        o.value=`${y}-${String(m+1).padStart(2,'0')}`;
+        o.textContent=`${MONTHS[m]} ${y}`;ms.appendChild(o);
+      }
+    }
+  });
+  document.getElementById('t-date').value=new Date().toISOString().split('T')[0];
+  populateFilters();renderListe();updatePendingBadge();
+}
+
+function populateFilters(){
+  const eds=[...new Set(games.map(g=>g.editeur))].sort();
+  const mos=[...new Set(games.map(g=>g.mois))].sort().reverse();
+  const es=document.getElementById('f-editor'),pe=es.value;
+  es.innerHTML='<option value="">✦ Tous les éditeurs</option>';
+  eds.forEach(e=>{const o=document.createElement('option');o.value=e;o.textContent=e;es.appendChild(o);});es.value=pe;
+  const ms=document.getElementById('f-month'),pm=ms.value;
+  ms.innerHTML='<option value="">✦ Tous les mois</option>';
+  mos.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=fmtM(m);ms.appendChild(o);});ms.value=pm;
+  const dl=document.getElementById('ed-list');dl.innerHTML='';
+  eds.forEach(e=>{const o=document.createElement('option');o.value=e;dl.appendChild(o);});
+}
+
+function showSection(name,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('sec-'+name).classList.add('active');
+  el.classList.add('active');
+  if(name==='graphs')renderGraphs();
+  if(name==='editors')renderEditors();
+  if(name==='tournoi')renderTournoi();
+  if(name==='review')renderReview();
+}
+
+// ── ALERTES ──────────────────────────────────────────────────────
+function getOverdue(){
+  return games.filter(g=>!g.published&&daysSince(g.mois)>REVIEW_DELAY_DAYS);
+}
+function checkAlerts(){
+  const overdue=getOverdue();
+  const z=document.getElementById('alert-zone');
+  if(!overdue.length){z.innerHTML='';return;}
+  z.innerHTML=`<div class="alert-banner">
+    <div class="alert-banner-title">⚠️ ${overdue.length} jeu${overdue.length>1?'x':''} en attente depuis plus d'un mois</div>
+    ${overdue.slice(0,3).map(g=>`<div class="alert-item"><span class="alert-item-name">${g.nom}</span><span class="alert-age">${Math.floor(daysSince(g.mois)/30)}m+</span></div>`).join('')}
+    ${overdue.length>3?`<div style="font-size:11px;color:var(--text2);margin-top:4px">+${overdue.length-3} autres</div>`:''}
+  </div>`;
+}
+function updatePendingBadge(){
+  const n=getOverdue().length;
+  const nav=document.getElementById('nav-review');
+  const existing=nav.querySelector('.nav-badge');
+  if(existing)existing.remove();
+  if(n>0){const b=document.createElement('div');b.className='nav-badge';b.textContent=n;nav.appendChild(b);}
+}
+
+// ── NOTIFICATIONS ────────────────────────────────────────────────
+function updateNotifBtn(){
+  const btn=document.getElementById('notif-btn');
+  btn.classList.toggle('on',notifEnabled);
+  btn.title=notifEnabled?'Notifications activées':'Activer les notifications';
+}
+async function toggleNotifications(){
+  if(notifEnabled){
+    notifEnabled=false;localStorage.setItem('notif_enabled','0');updateNotifBtn();toast('🔕 Notifications désactivées');return;
+  }
+  if(!('Notification' in window)){toast('❌ Non supporté sur ce navigateur');return;}
+  const perm=await Notification.requestPermission();
+  if(perm==='granted'){
+    notifEnabled=true;localStorage.setItem('notif_enabled','1');updateNotifBtn();
+    toast('🔔 Notifications activées !');
+    scheduleNotifications();
+  } else {
+    toast('❌ Permission refusée');
+  }
+}
+function scheduleNotifications(){
+  if(!notifEnabled||!('Notification' in window)||Notification.permission!=='granted')return;
+  const overdue=getOverdue();
+  if(!overdue.length)return;
+  // Notif immédiate si overdue (pour test/démo) — en prod on programmerait via SW
+  setTimeout(()=>{
+    if(Notification.permission==='granted'&&notifEnabled){
+      new Notification('🎲 Le Ludiverse',{
+        body:`${overdue.length} jeu${overdue.length>1?'x':''} attend${overdue.length>1?'ent':''} une review depuis plus d'un mois !`,
+        icon:'./icon-192.png',
+        tag:'ludiverse-review'
+      });
+    }
+  }, 3000);
+}
+
+// ── LISTE ────────────────────────────────────────────────────────
+function renderListe(){
+  const fm=document.getElementById('f-month').value;
+  const fe=document.getElementById('f-editor').value;
+  const fs=document.getElementById('f-status').value;
+  const q=document.getElementById('search').value.toLowerCase().trim();
+  const f=games.filter(g=>
+    (!fm||g.mois===fm)&&
+    (!fe||g.editeur===fe)&&
+    (!fs||(fs==='published'?g.published:!g.published))&&
+    (!q||g.nom.toLowerCase().includes(q)||g.editeur.toLowerCase().includes(q))
+  );
+  const total=f.reduce((s,g)=>s+px(g),0);
+  const pub=f.filter(g=>g.published).length;
+  document.getElementById('stats-liste').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Jeux filtrés</div><div class="stat-value">${f.length}</div><div class="stat-sub">${new Set(f.map(g=>g.editeur)).size} éditeurs</div></div>
+    <div class="stat-card"><div class="stat-label">Valeur</div><div class="stat-value">${total.toFixed(0)} €</div><div class="stat-sub">${pub} publié${pub>1?'s':''}</div></div>
+  `;
+  const c=document.getElementById('game-list');
+  if(!f.length){c.innerHTML='<div class="empty"><span class="empty-icon">🚀</span>Aucun jeu trouvé</div>';return;}
+  const now=Date.now();
+  c.innerHTML=f.sort((a,b)=>b.mois.localeCompare(a.mois)).map(g=>{
+    const overdue=!g.published&&daysSince(g.mois)>REVIEW_DELAY_DAYS;
+    const statusTag=g.published
+      ?`<span class="tag tag-pub">✅ Publié${g.pubdate?' · '+fmtDate(g.pubdate):''}</span>`
+      :(overdue?`<span class="tag tag-nopub">⚠️ En retard</span>`:`<span class="tag tag-wait">⏳ En attente</span>`);
+    return `<div class="game-card ${g.published?'published':overdue?'overdue':''}">
+      <div class="game-card-top">
+        <div><div class="game-title">${g.nom}</div><div class="game-meta">${[g.joueurs?g.joueurs+' joueurs':null,g.age||null,fmtM(g.mois)].filter(Boolean).join(' · ')}</div></div>
+        <div class="game-price">${g.prix&&g.prix!='0'?parseFloat(g.prix).toFixed(2)+' €':'—'}</div>
+      </div>
+      <div class="tags">
+        <span class="tag tag-ed">${g.editeur}</span>
+        <span class="tag tag-mo">${fmtM(g.mois)}</span>
+        ${statusTag}
+        ${g.note?`<span style="font-size:12px">${stars(g.note)}</span>`:''}
+      </div>
+      ${g.notes?`<div class="game-note-text">${g.notes}</div>`:''}
+      <div class="game-actions">
+        <button class="btn-ghost gold" onclick="openEdit('${g.id}')">✏️ Modifier</button>
+        ${!g.published?`<button class="btn-ghost green" onclick="togglePublished('${g.id}')">✅ Publié</button>`:`<button class="btn-ghost" onclick="togglePublished('${g.id}')">↩ Dépublier</button>`}
+        <button class="btn-ghost red" onclick="del('${g.id}')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── EDIT MODAL ────────────────────────────────────────────────────
+function openEdit(id){
+  const g=games.find(x=>x.id===id);if(!g)return;
+  editingId=id;
+  document.getElementById('e-nom').value=g.nom;
+  document.getElementById('e-ed').value=g.editeur;
+  document.getElementById('e-prix').value=g.prix;
+  document.getElementById('e-mois').value=g.mois;
+  document.getElementById('e-joueurs').value=g.joueurs||'';
+  document.getElementById('e-age').value=g.age||'';
+  document.getElementById('e-note').value=g.note||'';
+  document.getElementById('e-notes').value=g.notes||'';
+  document.getElementById('e-published').value=g.published?'1':'0';
+  document.getElementById('e-pubdate').value=g.pubdate||'';
+  document.getElementById('edit-modal').style.display='flex';
+}
+function closeEditModal(e){
+  if(e&&e.target!==document.getElementById('edit-modal'))return;
+  document.getElementById('edit-modal').style.display='none';editingId=null;
+}
+function saveEdit(){
+  const g=games.find(x=>x.id===editingId);if(!g)return;
+  g.nom=document.getElementById('e-nom').value.trim();
+  g.editeur=document.getElementById('e-ed').value.trim();
+  g.prix=document.getElementById('e-prix').value;
+  g.mois=document.getElementById('e-mois').value;
+  g.joueurs=document.getElementById('e-joueurs').value.trim();
+  g.age=document.getElementById('e-age').value.trim();
+  g.note=document.getElementById('e-note').value;
+  g.notes=document.getElementById('e-notes').value.trim();
+  g.published=parseInt(document.getElementById('e-published').value);
+  g.pubdate=document.getElementById('e-pubdate').value;
+  save();populateFilters();renderListe();checkAlerts();updatePendingBadge();
+  document.getElementById('edit-modal').style.display='none';editingId=null;
+  toast('💾 Jeu mis à jour !');
+}
+function togglePublished(id){
+  const g=games.find(x=>x.id===id);if(!g)return;
+  g.published=g.published?0:1;
+  if(g.published&&!g.pubdate)g.pubdate=new Date().toISOString().split('T')[0];
+  save();renderListe();checkAlerts();updatePendingBadge();
+  toast(g.published?'✅ Marqué comme publié !':'↩ Dépublié');
+}
+
+// ── REVIEW STATS ─────────────────────────────────────────────────
+function renderReview(){
+  const years=[...new Set(games.map(g=>g.mois?.split('-')[0]))].filter(Boolean).sort().reverse();
+  if(!years.includes(String(rvYear))&&years.length)rvYear=parseInt(years[0]);
+  document.getElementById('rv-year-chips').innerHTML=years.map(y=>`<button class="chip ${y==rvYear?'on':''}" onclick="setRVY(${y})">${y}</button>`).join('');
+  const fy=games.filter(g=>g.mois?.startsWith(rvYear+''));
+  const pub=fy.filter(g=>g.published).length;
+  const pct=fy.length?Math.round(pub/fy.length*100):0;
+  const overdue=fy.filter(g=>!g.published&&daysSince(g.mois)>REVIEW_DELAY_DAYS).length;
+  document.getElementById('rv-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Reçus</div><div class="stat-value">${fy.length}</div><div class="stat-sub">${rvYear}</div></div>
+    <div class="stat-card green"><div class="stat-label">Publiés</div><div class="stat-value green">${pub}</div><div class="stat-sub">${pct}% du total</div></div>
+    <div class="stat-card red"><div class="stat-label">En retard</div><div class="stat-value red">${overdue}</div><div class="stat-sub">>1 mois</div></div>
+  `;
+  // Graphique taux par mois
+  const mos=[...new Set(fy.map(g=>g.mois))].sort();
+  const rates=mos.map(m=>{
+    const mg=fy.filter(g=>g.mois===m);
+    return mg.length?Math.round(mg.filter(g=>g.published).length/mg.length*100):0;
+  });
+  if(cRvRate)cRvRate.destroy();
+  cRvRate=new Chart(document.getElementById('c-review-rate'),{
+    type:'bar',
+    data:{labels:mos.map(m=>MONTHS[parseInt(m.split('-')[1])-1].slice(0,3)),datasets:[{data:rates,backgroundColor:rates.map(r=>r>=80?'rgba(76,175,125,.7)':r>=50?'rgba(245,200,66,.7)':'rgba(232,75,75,.7)'),borderRadius:6}]},
+    options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.parsed.y+'%'}}},scales:{x:{ticks:{color:'#8899bb',font:{size:11}},grid:{display:false}},y:{max:100,ticks:{color:'#8899bb',font:{size:10},callback:v=>v+'%'},grid:{color:'rgba(255,255,255,.05)'}}}}
+  });
+  // Pie
+  if(cRvPie)cRvPie.destroy();
+  cRvPie=new Chart(document.getElementById('c-review-pie'),{
+    type:'doughnut',
+    data:{labels:['Publiés','En attente'],datasets:[{data:[pub,fy.length-pub],backgroundColor:['rgba(76,175,125,.8)','rgba(139,91,200,.6)'],borderColor:['#4caf7d','#8b5bc8'],borderWidth:2}]},
+    options:{responsive:true,plugins:{legend:{labels:{color:'#e8eaf6',font:{size:12}}}}}
+  });
+  // Liste en attente
+  const pending=fy.filter(g=>!g.published).sort((a,b)=>a.mois.localeCompare(b.mois));
+  document.getElementById('rv-pending-list').innerHTML=!pending.length
+    ?'<div class="empty"><span class="empty-icon">✅</span>Tout est publié !</div>'
+    :pending.map(g=>{
+      const days=daysSince(g.mois);
+      const overdue=days>REVIEW_DELAY_DAYS;
+      return `<div class="game-card ${overdue?'overdue':''}">
+        <div class="game-card-top">
+          <div><div class="game-title">${g.nom}</div><div class="game-meta">${g.editeur} · ${fmtM(g.mois)}</div></div>
+          <div style="font-size:11px;color:${overdue?'#f08080':'var(--text2)'};white-space:nowrap">${Math.floor(days/30)}m ${days%30}j</div>
+        </div>
+        <div class="game-actions">
+          <button class="btn-ghost green" onclick="togglePublished('${g.id}')">✅ Marquer publié</button>
+          <button class="btn-ghost gold" onclick="openEdit('${g.id}')">✏️</button>
+        </div>
+      </div>`;
+    }).join('');
+}
+function setRVY(y){rvYear=y;renderReview();}
+
+// ── GRAPHIQUES ───────────────────────────────────────────────────
+function renderGraphs(){
+  const years=[...new Set(games.map(g=>g.mois?.split('-')[0]))].filter(Boolean).sort().reverse();
+  if(!years.includes(String(gYear))&&years.length)gYear=parseInt(years[0]);
+  document.getElementById('graph-chips').innerHTML=years.map(y=>`<button class="chip ${y==gYear?'on':''}" onclick="setGY(${y})">${y}</button>`).join('');
+  const fy=games.filter(g=>g.mois?.startsWith(gYear+''));
+  const em={};fy.forEach(g=>{if(!em[g.editeur])em[g.editeur]=0;em[g.editeur]+=px(g);});
+  const es=Object.entries(em).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  if(cEd)cEd.destroy();
+  cEd=new Chart(document.getElementById('c-editor'),{type:'bar',data:{labels:es.map(e=>e[0]),datasets:[{data:es.map(e=>+e[1].toFixed(2)),backgroundColor:es.map((_,i)=>PAL[i%PAL.length]+'cc'),borderColor:es.map((_,i)=>PAL[i%PAL.length]),borderWidth:1,borderRadius:6}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.parsed.x.toFixed(2)+' €'}}},scales:{x:{ticks:{color:'#8899bb',font:{size:10},callback:v=>v+'€'},grid:{color:'rgba(255,255,255,.05)'}},y:{ticks:{color:'#e8eaf6',font:{size:11,weight:'700'}},grid:{display:false}}}}});
+  const mm={};fy.forEach(g=>{if(!mm[g.mois])mm[g.mois]=0;mm[g.mois]++;});
+  const mk=Object.keys(mm).sort();
+  if(cMo)cMo.destroy();
+  cMo=new Chart(document.getElementById('c-month'),{type:'bar',data:{labels:mk.map(m=>MONTHS[parseInt(m.split('-')[1])-1].slice(0,3)),datasets:[{data:mk.map(m=>mm[m]),backgroundColor:'rgba(139,91,200,.7)',borderColor:'#8b5bc8',borderWidth:1,borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.parsed.y+' jeux'}}},scales:{x:{ticks:{color:'#8899bb',font:{size:11}},grid:{display:false}},y:{ticks:{color:'#8899bb',font:{size:10},stepSize:1},grid:{color:'rgba(255,255,255,.05)'}}}}});
+  const mv={};fy.forEach(g=>{if(!mv[g.mois])mv[g.mois]=0;mv[g.mois]+=px(g);});
+  const mvk=Object.keys(mv).sort();
+  if(cVal)cVal.destroy();
+  cVal=new Chart(document.getElementById('c-value'),{type:'line',data:{labels:mvk.map(m=>MONTHS[parseInt(m.split('-')[1])-1].slice(0,3)),datasets:[{data:mvk.map(m=>+mv[m].toFixed(2)),borderColor:'#f5c842',backgroundColor:'rgba(245,200,66,.1)',fill:true,tension:.4,pointBackgroundColor:'#f5c842',pointRadius:4}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.parsed.y.toFixed(2)+' €'}}},scales:{x:{ticks:{color:'#8899bb',font:{size:11}},grid:{display:false}},y:{ticks:{color:'#8899bb',font:{size:10},callback:v=>v+'€'},grid:{color:'rgba(255,255,255,.05)'}}}}});
+}
+function setGY(y){gYear=y;renderGraphs();}
+
+// ── ÉDITEURS ─────────────────────────────────────────────────────
+function renderEditors(){
+  const years=[...new Set(games.map(g=>g.mois?.split('-')[0]))].filter(Boolean).sort().reverse();
+  if(!years.includes(String(eYear))&&years.length)eYear=parseInt(years[0]);
+  document.getElementById('ed-chips').innerHTML=years.map(y=>`<button class="chip ${y==eYear?'on':''}" onclick="setEY(${y})">${y}</button>`).join('');
+  const fy=games.filter(g=>g.mois?.startsWith(eYear+''));
+  const all={};games.forEach(g=>{if(!all[g.editeur])all[g.editeur]={t:0,n:0};all[g.editeur].t+=px(g);all[g.editeur].n++;});
+  const map={};fy.forEach(g=>{if(!map[g.editeur])map[g.editeur]={t:0,n:0};map[g.editeur].t+=px(g);map[g.editeur].n++;});
+  const tAll=games.reduce((s,g)=>s+px(g),0);
+  const tYear2=fy.reduce((s,g)=>s+px(g),0);
+  document.getElementById('stats-editors').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Total tous temps</div><div class="stat-value">${tAll.toFixed(0)} €</div><div class="stat-sub">${games.length} jeux</div></div>
+    <div class="stat-card"><div class="stat-label">${eYear}</div><div class="stat-value">${tYear2.toFixed(0)} €</div><div class="stat-sub">${fy.length} jeux</div></div>
+  `;
+  const sorted=Object.entries(map).sort((a,b)=>b[1].t-a[1].t);
+  const max=Math.max(...sorted.map(e=>e[1].t),1);
+  document.getElementById('editor-list').innerHTML=!sorted.length?'<div class="empty"><span class="empty-icon">🏢</span>Aucun éditeur cette année</div>':sorted.map(([n,d])=>`<div class="editor-card"><div class="editor-top"><div><div class="editor-name">${n}</div><div class="editor-sub">${d.n} jeu${d.n>1?'x':''} en ${eYear} · ${all[n]?.n||0} au total</div></div><div><div class="editor-total">${d.t.toFixed(2)} €</div><div class="editor-count">${eYear}</div></div></div><div class="bar-bg"><div class="bar-fill" style="width:${Math.round(d.t/max*100)}%"></div></div></div>`).join('');
+}
+function setEY(y){eYear=y;renderEditors();}
+
+// ── TOURNOI ──────────────────────────────────────────────────────
+function wClass(name){const k=name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');return PLAYER_CSS[k]||'wc-default';}
+
+function calcStats(year){
+  const sessions=tournoi.filter(s=>s.annee===year||s.date?.startsWith(year+''));
+  const wins={};
+  sessions.forEach(s=>{
+    s.parties.forEach(p=>{
+      p.gagnants.forEach(g=>{
+        if(!wins[g])wins[g]={total:0,jeux:{},byMonth:{}};
+        wins[g].total++;
+        wins[g].jeux[p.jeu]=(wins[g].jeux[p.jeu]||0)+1;
+        const mo=s.date?.substring(0,7)||'';
+        wins[g].byMonth[mo]=(wins[g].byMonth[mo]||0)+1;
+      });
+    });
+  });
+  return wins;
+}
+
+function calcStreaks(year){
+  const sessions=tournoi.filter(s=>s.annee===year||s.date?.startsWith(year+'')).sort((a,b)=>a.date.localeCompare(b.date));
+  const streaks={};
+  sessions.forEach(s=>{
+    s.parties.forEach(p=>{
+      const winners=new Set(p.gagnants);
+      const allPlayers=new Set(tournoi.flatMap(sx=>sx.parties.flatMap(px=>px.gagnants)));
+      allPlayers.forEach(player=>{
+        if(!streaks[player])streaks[player]={current:0,max:0};
+        if(winners.has(player)){streaks[player].current++;if(streaks[player].current>streaks[player].max)streaks[player].max=streaks[player].current;}
+        else streaks[player].current=0;
+      });
+    });
+  });
+  return streaks;
+}
+
+function renderTournoi(){
+  const years=[...new Set(tournoi.map(s=>s.annee||(s.date?parseInt(s.date.split('-')[0]):null)))].filter(Boolean).sort().reverse();
+  if(!years.includes(tYear)&&years.length)tYear=years[0];
+  document.getElementById('t-year-chips').innerHTML=years.map(y=>`<button class="chip ${y==tYear?'on':''}" onclick="setTY(${y})">${y}</button>`).join('');
+
+  const wins=calcStats(tYear);
+  const sorted=Object.entries(wins).sort((a,b)=>b[1].total-a[1].total);
+  const max=Math.max(...sorted.map(e=>e[1].total),1);
+  const medals=['🥇','🥈','🥉'];
+  const posClass=['p1','p2','p3'];
+
+  // Classement
+  document.getElementById('t-ranking').innerHTML=sorted.map(([name,data],i)=>`
+    <div class="ranking-row">
+      <div class="ranking-pos ${posClass[i]||''}">${medals[i]||i+1}</div>
+      <div class="ranking-info">
+        <div class="ranking-name">${name}</div>
+        <div class="ranking-detail">${Object.keys(data.jeux).length} jeu${Object.keys(data.jeux).length>1?'x':''} · jeu fav: <strong>${Object.entries(data.jeux).sort((a,b)=>b[1]-a[1])[0]?.[0]||'–'}</strong></div>
+        <div class="ranking-bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${Math.round(data.total/max*100)}%"></div></div></div>
+      </div>
+      <div class="ranking-wins">${data.total}<div class="ranking-wins-label">vic.</div></div>
+    </div>`).join('');
+
+  // Graphique barres
+  const labels=sorted.map(e=>e[0]);
+  const vals=sorted.map(e=>e[1].total);
+  const bgColors=labels.map(n=>PCOLORS[n]||PAL[0]);
+  if(cTournoi)cTournoi.destroy();
+  cTournoi=new Chart(document.getElementById('c-tournoi'),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:bgColors.map(c=>c+'cc'),borderColor:bgColors,borderWidth:1,borderRadius:8}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.parsed.y+' victoires'}}},scales:{x:{ticks:{color:'#e8eaf6',font:{size:12,weight:'700'}},grid:{display:false}},y:{ticks:{color:'#8899bb',font:{size:10},stepSize:1},grid:{color:'rgba(255,255,255,.05)'}}}}});
+
+  // Graphique évolution mensuelle
+  const sessions=tournoi.filter(s=>s.annee===tYear||s.date?.startsWith(tYear+''));
+  const allMos=[...new Set(sessions.map(s=>s.date?.substring(0,7)))].sort();
+  const players=sorted.map(e=>e[0]);
+  const moDatasets=players.map(p=>({
+    label:p,
+    data:allMos.map(mo=>{
+      let c=0;sessions.filter(s=>s.date?.startsWith(mo)).forEach(s=>s.parties.forEach(px=>px.gagnants.forEach(g=>{if(g===p)c++;})));return c;
+    }),
+    borderColor:PCOLORS[p]||PAL[0],backgroundColor:(PCOLORS[p]||PAL[0])+'33',fill:false,tension:.3,pointRadius:3
+  }));
+  if(cTournoiM)cTournoiM.destroy();
+  cTournoiM=new Chart(document.getElementById('c-tournoi-monthly'),{type:'line',data:{labels:allMos.map(m=>MONTHS[parseInt(m.split('-')[1])-1].slice(0,3)),datasets:moDatasets},options:{responsive:true,plugins:{legend:{labels:{color:'#e8eaf6',font:{size:11},boxWidth:12}}},scales:{x:{ticks:{color:'#8899bb',font:{size:11}},grid:{display:false}},y:{ticks:{color:'#8899bb',font:{size:10},stepSize:1},grid:{color:'rgba(255,255,255,.05)'}}}}});
+
+  // Séries
+  const streaks=calcStreaks(tYear);
+  document.getElementById('t-streaks').innerHTML=Object.entries(streaks).sort((a,b)=>b[1].max-a[1].max).map(([name,s])=>`
+    <div class="streak-card">
+      <div class="streak-title"><span class="winner-chip ${wClass(name)}">${name}</span> ${s.current>2?'🔥 Série en cours':''}</div>
+      <div class="streak-sub">Meilleure série : <strong>${s.max} victoire${s.max>1?'s':''} consécutive${s.max>1?'s':''}</strong>${s.current>0?` · En cours : ${s.current}`:''}</div>
+    </div>`).join('');
+
+  // Stats par joueur
+  document.getElementById('t-player-stats').innerHTML=sorted.map(([name,data])=>{
+    const favJeu=Object.entries(data.jeux).sort((a,b)=>b[1]-a[1])[0];
+    const favMo=Object.entries(data.byMonth).sort((a,b)=>b[1]-a[1])[0];
+    const moLabel=favMo?MONTHS[parseInt(favMo[0].split('-')[1])-1]:'–';
+    return `<div class="player-stat-card">
+      <div class="player-stat-name" style="color:${PCOLORS[name]||'var(--text)'}">${name}</div>
+      <div class="player-stat-row"><span>Victoires</span><span class="player-stat-val">${data.total}</span></div>
+      <div class="player-stat-row"><span>Jeux différents</span><span class="player-stat-val">${Object.keys(data.jeux).length}</span></div>
+      <div class="player-stat-row"><span>Jeu fétiche</span><span class="player-stat-val" style="font-size:10px">${favJeu?favJeu[0]:'–'}</span></div>
+      <div class="player-stat-row"><span>Meilleur mois</span><span class="player-stat-val">${moLabel}</span></div>
+    </div>`;}).join('');
+
+  // Sessions
+  const sYear=tournoi.filter(s=>s.annee===tYear||s.date?.startsWith(tYear+'')).sort((a,b)=>b.date.localeCompare(a.date));
+
+  // Jeu le plus joué
+  const jeuCount={};sYear.forEach(s=>s.parties.forEach(p=>{jeuCount[p.jeu]=(jeuCount[p.jeu]||0)+1;}));
+  const topJeu=Object.entries(jeuCount).sort((a,b)=>b[1]-a[1])[0];
+
+  document.getElementById('t-sessions').innerHTML=(topJeu?`<div class="streak-card" style="margin-bottom:12px"><div class="streak-title">🎲 Jeu le plus joué</div><div class="streak-sub"><strong>${topJeu[0]}</strong> — ${topJeu[1]} partie${topJeu[1]>1?'s':''}</div></div>`:'')
+  +(!sYear.length?'<div class="empty"><span class="empty-icon">📅</span>Aucune session</div>'
+  :sYear.map(s=>`<div class="session-card">
+    <div class="session-date">📅 ${fmtDate(s.date)}<span class="session-date-sub">${s.parties.length} partie${s.parties.length>1?'s':''}</span></div>
+    ${s.parties.map(p=>`<div class="session-game-row"><div><div class="session-game-name">${p.jeu}${p.score?` <span style="font-size:11px;color:var(--text2)">(${p.score} pts)</span>`:''}</div><div class="session-game-winners">${p.gagnants.map(g=>`<span class="winner-chip ${wClass(g)}">${g}</span>`).join('')}</div></div></div>`).join('')}
+    <div class="game-actions" style="margin-top:10px"><button class="btn-ghost red" onclick="deleteSession('${s.id}')">✕ Supprimer</button></div>
+  </div>`).join(''));
+}
+function setTY(y){tYear=y;renderTournoi();}
+
+// ── SESSION ──────────────────────────────────────────────────────
+function showAddSession(){
+  const p=document.getElementById('add-session-panel');
+  p.style.display=p.style.display==='none'?'block':'none';
+  if(p.style.display==='block'){document.getElementById('parties-container').innerHTML='';partieCount=0;addPartieRow();p.scrollIntoView({behavior:'smooth'});}
+}
+function addPartieRow(){
+  partieCount++;const id=partieCount;
+  const div=document.createElement('div');div.className='partie-row';div.id='partie-'+id;
+  div.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div class="partie-row-title">Partie ${id}</div><button class="btn-remove" onclick="removePartie(${id})">✕</button></div><div class="field"><label>Jeu</label><input id="p-jeu-${id}" placeholder="Nom du jeu" autocomplete="off"/></div><div class="row2"><div class="field"><label>Gagnant(s)</label><input id="p-gagnants-${id}" placeholder="Papa, Maman…" autocomplete="off"/></div><div class="field"><label>Score total</label><input id="p-score-${id}" type="number" placeholder="0" min="0"/></div></div>`;
+  document.getElementById('parties-container').appendChild(div);
+}
+function removePartie(id){const el=document.getElementById('partie-'+id);if(el)el.remove();}
+function saveSession(){
+  const date=document.getElementById('t-date').value;
+  if(!date){toast('⚠ Date obligatoire');return;}
+  const parties=[];
+  document.querySelectorAll('.partie-row').forEach(row=>{
+    const id=row.id.replace('partie-','');
+    const jeu=document.getElementById('p-jeu-'+id)?.value.trim();
+    const gStr=document.getElementById('p-gagnants-'+id)?.value.trim();
+    const score=parseInt(document.getElementById('p-score-'+id)?.value)||0;
+    if(jeu&&gStr)parties.push({jeu,gagnants:gStr.split(',').map(g=>g.trim()).filter(Boolean),score});
+  });
+  if(!parties.length){toast('⚠ Ajoute au moins une partie');return;}
+  tournoi.push({id:'t'+Date.now(),date,annee:parseInt(date.split('-')[0]),parties});
+  saveTournoi();document.getElementById('add-session-panel').style.display='none';
+  toast('🏆 Session ajoutée !');renderTournoi();
+}
+function deleteSession(id){
+  if(!confirm('Supprimer cette session ?'))return;
+  tournoi=tournoi.filter(s=>s.id!==id);saveTournoi();renderTournoi();toast('Session supprimée');
+}
+
+// ── JEUX ─────────────────────────────────────────────────────────
+function addGame(){
+  const nom=document.getElementById('i-nom').value.trim();
+  const editeur=document.getElementById('i-ed').value.trim();
+  if(!nom||!editeur){toast('⚠ Nom et éditeur obligatoires');return;}
+  games.push({id:Date.now().toString(),nom,editeur,prix:document.getElementById('i-prix').value||'0',mois:document.getElementById('i-mois').value,joueurs:document.getElementById('i-joueurs').value.trim(),age:document.getElementById('i-age').value.trim(),note:document.getElementById('i-note').value,notes:document.getElementById('i-notes').value.trim(),published:0,pubdate:''});
+  save();populateFilters();
+  ['i-nom','i-ed','i-prix','i-joueurs','i-age','i-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('i-note').value='';
+  toast('✦ Jeu ajouté !');
+  showSection('liste',document.querySelector('.nav-item'));
+  document.querySelectorAll('.nav-item').forEach((n,i)=>i===0?n.classList.add('active'):n.classList.remove('active'));
+  renderListe();checkAlerts();updatePendingBadge();
+}
+function del(id){
+  if(!confirm('Supprimer ce jeu ?'))return;
+  games=games.filter(g=>g.id!==id);save();populateFilters();renderListe();checkAlerts();updatePendingBadge();toast('Supprimé');
+}
+function importCSV(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const lines=e.target.result.split('\n').map(l=>l.trim()).filter(Boolean);
+    const mMap={'Janvier':'01','Février':'02','F\xe9vrier':'02','Mars':'03','Avril':'04','Mai':'05','Juin':'06','Juillet':'07','Août':'08','Ao\xfbt':'08','Septembre':'09','Octobre':'10','Novembre':'11','Décembre':'12','D\xe9cembre':'12'};
+    let curM='',added=0;const yr=new Date().getFullYear();
+    lines.slice(1).forEach(line=>{
+      const cols=line.split(',').map(c=>c.replace(/^"|"$/g,'').trim());
+      if(cols[0]&&cols[0]!=='MOIS'){const mo=mMap[cols[0]];if(mo)curM=`${yr}-${mo}`;}
+      if(cols[2]&&cols[2]!=='JEUX'&&curM){
+        const p=(cols[3]||'0').replace(',','.');
+        if(!games.some(g=>g.nom===cols[2]&&g.mois===curM)){games.push({id:'i'+Date.now()+Math.random(),nom:cols[2],editeur:cols[1]||'',prix:p,mois:curM,joueurs:'',age:'',note:'',notes:'',published:0,pubdate:''});added++;}
+      }
+    });
+    save();populateFilters();renderListe();checkAlerts();updatePendingBadge();toast(`✦ ${added} jeux importés !`);input.value='';
+  };
+  reader.readAsText(file,'UTF-8');
+}
+function exportCSV(){
+  let csv='NOM,ÉDITEUR,PRIX,MOIS,JOUEURS,ÂGE,NOTE,NOTES,PUBLIÉ,DATE PUB\n';
+  games.forEach(g=>{csv+=`"${g.nom}","${g.editeur}","${g.prix}","${g.mois}","${g.joueurs||''}","${g.age||''}","${g.note||''}","${g.notes||''}","${g.published?'Oui':'Non'}","${g.pubdate||''}"\n`;});
+  dlFile('ludiverse_export.csv','data:text/csv;charset=utf-8,'+encodeURIComponent(csv));
+}
+function exportJSON(){
+  dlFile('ludiverse_backup.json','data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify({games,tournoi},null,2)));
+}
+function dlFile(name,href){const a=document.createElement('a');a.href=href;a.download=name;a.click();toast('⬇ Export en cours...');}
+
+load();
+</script>
+</body>
+</html>
