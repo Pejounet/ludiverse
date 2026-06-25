@@ -193,6 +193,52 @@ select{background:var(--card);color:var(--text);border:1px solid var(--border);b
 
 .section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .section-head-title{font-family:'Bangers',cursive;font-size:17px;color:var(--gold);letter-spacing:.5px}
+
+/* ── COMPTEUR DE SCORE ── */
+.score-setup{background:var(--card);border:1px solid rgba(107,63,160,.35);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+.score-setup-title{font-family:'Bangers',cursive;font-size:20px;color:var(--gold);letter-spacing:1px;margin-bottom:14px}
+.player-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.player-chip-sel{font-size:13px;font-weight:700;padding:7px 14px;border-radius:20px;cursor:pointer;border:1px solid rgba(255,255,255,.15);background:transparent;color:var(--text2);font-family:'Nunito',sans-serif;transition:all .2s}
+.player-chip-sel.on{color:var(--navy2);border-color:transparent}
+.score-game{display:flex;flex-direction:column;gap:0}
+.score-header{background:var(--navy2);border-radius:var(--radius) var(--radius) 0 0;padding:14px;border:1px solid var(--border);border-bottom:none}
+.score-game-name{font-family:'Bangers',cursive;font-size:22px;color:var(--gold);letter-spacing:1px}
+.score-game-meta{font-size:12px;color:var(--text2);margin-top:2px;display:flex;gap:12px;align-items:center}
+.score-manche-badge{background:rgba(245,200,66,.15);color:var(--gold);border:1px solid rgba(245,200,66,.25);border-radius:20px;font-size:11px;font-weight:700;padding:2px 10px}
+.score-table{background:var(--card);border:1px solid var(--border);overflow:hidden}
+.score-table-head{display:grid;background:var(--navy3);padding:10px 14px;font-size:11px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)}
+.score-table-row{display:grid;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.04);align-items:center;transition:background .2s}
+.score-table-row.leader{background:rgba(245,200,66,.06)}
+.score-player-name{font-size:14px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:6px}
+.score-total{font-family:'Bangers',cursive;font-size:22px;color:var(--gold);text-align:right}
+.score-total.leader{color:var(--gold)}
+.score-delta{font-size:11px;color:var(--text2);text-align:center}
+.score-input-row{display:grid;padding:10px 14px;gap:8px;align-items:center;background:var(--navy2);border-bottom:1px solid var(--border)}
+.score-input{background:var(--card);color:var(--text);border:1px solid rgba(245,200,66,.25);border-radius:8px;padding:8px 10px;font-size:18px;font-family:'Bangers',cursive;letter-spacing:.5px;text-align:center;outline:none;width:100%}
+.score-input:focus{border-color:var(--gold)}
+.score-footer{background:var(--navy2);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);padding:12px 14px;display:flex;gap:8px}
+.timer-display{background:var(--navy3);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px;text-align:center}
+.timer-time{font-family:'Bangers',cursive;font-size:48px;color:var(--gold);letter-spacing:2px;line-height:1}
+.timer-time.warning{color:#e87040}
+.timer-time.danger{color:#e84b4b;animation:pulse .5s infinite alternate}
+@keyframes pulse{from{opacity:1}to{opacity:.5}}
+.timer-label{font-size:12px;color:var(--text2);margin-top:4px}
+.timer-controls{display:flex;gap:8px;margin-top:10px;justify-content:center}
+.btn-timer{padding:8px 18px;border-radius:9px;font-size:13px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;border:none}
+.btn-timer.start{background:var(--green);color:white}
+.btn-timer.pause{background:rgba(245,200,66,.2);color:var(--gold);border:1px solid rgba(245,200,66,.3)}
+.btn-timer.reset{background:rgba(255,255,255,.08);color:var(--text2);border:1px solid rgba(255,255,255,.1)}
+.winner-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:150;display:flex;align-items:center;justify-content:center;padding:20px}
+.winner-modal{background:var(--navy3);border:2px solid var(--gold);border-radius:20px;padding:28px 20px;width:100%;max-width:380px;text-align:center}
+.winner-trophy{font-size:56px;margin-bottom:12px}
+.winner-title{font-family:'Bangers',cursive;font-size:28px;color:var(--gold);letter-spacing:1.5px;margin-bottom:6px}
+.winner-name{font-family:'Bangers',cursive;font-size:38px;letter-spacing:2px;margin-bottom:16px}
+.winner-scores{display:flex;flex-direction:column;gap:6px;margin-bottom:20px}
+.winner-score-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--card);border-radius:9px}
+.winner-score-row.first{background:rgba(245,200,66,.15);border:1px solid rgba(245,200,66,.3)}
+.winner-score-name{font-size:14px;font-weight:800;color:var(--text)}
+.winner-score-val{font-family:'Bangers',cursive;font-size:18px;color:var(--gold)}
+.winner-actions{display:flex;gap:8px;flex-direction:column}
 </style>
 </head>
 <body>
@@ -304,6 +350,60 @@ select{background:var(--card);color:var(--text);border:1px solid var(--border);b
       </div>
     </div>
 
+    <!-- SCORE -->
+    <div id="sec-score" class="section">
+      <div id="score-setup-panel">
+        <div class="score-setup">
+          <div class="score-setup-title">🎯 Nouvelle partie</div>
+          <div class="field"><label>Nom du jeu</label><input id="sc-jeu" placeholder="Ex: Flip7" autocomplete="off"/></div>
+          <div class="field">
+            <label>Joueurs</label>
+            <div class="player-chips" id="sc-players-chips"></div>
+            <input id="sc-custom-player" placeholder="+ Ajouter un joueur personnalisé…" autocomplete="off" style="margin-top:8px;width:100%;background:var(--navy2);color:var(--text);border:1px solid rgba(245,200,66,.18);border-radius:8px;padding:8px 12px;font-size:14px;font-family:'Nunito',sans-serif;outline:none" onkeydown="if(event.key==='Enter')addCustomPlayer()"/>
+          </div>
+          <div class="field">
+            <label>Règle de victoire</label>
+            <select id="sc-rule">
+              <option value="high">🔼 Le plus haut score gagne</option>
+              <option value="low">🔽 Le plus bas score gagne</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Timer par manche (optionnel)</label>
+            <select id="sc-timer-duration" onchange="toggleCustomTimer()">
+              <option value="0">Pas de timer</option>
+              <option value="60">1 minute</option>
+              <option value="120">2 minutes</option>
+              <option value="180">3 minutes</option>
+              <option value="300">5 minutes</option>
+              <option value="600">10 minutes</option>
+              <option value="custom">Personnalisé…</option>
+            </select>
+            <input id="sc-timer-custom" type="number" placeholder="Durée en secondes" min="10" style="display:none;margin-top:8px;width:100%;background:var(--navy2);color:var(--text);border:1px solid rgba(245,200,66,.18);border-radius:8px;padding:8px 12px;font-size:16px;font-family:'Nunito',sans-serif;outline:none"/>
+          </div>
+          <button class="btn-primary" onclick="startGame()">🎲 Démarrer la partie</button>
+        </div>
+      </div>
+      <div id="score-game-panel" style="display:none">
+        <div id="sc-timer-display" style="display:none" class="timer-display">
+          <div class="timer-time" id="sc-timer-val">00:00</div>
+          <div class="timer-label">Temps restant pour cette manche</div>
+          <div class="timer-controls">
+            <button class="btn-timer start" id="sc-timer-start-btn" onclick="timerToggle()">▶ Démarrer</button>
+            <button class="btn-timer reset" onclick="timerReset()">↺ Reset</button>
+          </div>
+        </div>
+        <div class="score-game" id="sc-table"></div>
+        <div style="display:flex;gap:8px;margin-top:12px;margin-bottom:6px">
+          <button class="btn-primary" style="flex:1" onclick="validerManche()">✓ Valider la manche</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:14px">
+          <button class="btn-ghost" style="flex:1;padding:9px" onclick="annulerManche()">↩ Annuler manche</button>
+          <button class="btn-ghost red" style="flex:1;padding:9px" onclick="terminerPartie()">🏁 Terminer</button>
+        </div>
+      </div>
+    </div>
+
     <!-- TOURNOI -->
     <div id="sec-tournoi" class="section">
       <div class="chips" id="t-year-chips"></div>
@@ -345,6 +445,7 @@ select{background:var(--card);color:var(--text);border:1px solid var(--border);b
     <div class="nav-item" onclick="showSection('graphs',this)"><div class="nav-icon">📊</div>Graphs</div>
     <div class="nav-item" onclick="showSection('editors',this)"><div class="nav-icon">🏢</div>Éditeurs</div>
     <div class="nav-item" onclick="showSection('add',this)"><div class="nav-icon">＋</div>Ajouter</div>
+    <div class="nav-item" onclick="showSection('score',this)"><div class="nav-icon">🎯</div>Score</div>
     <div class="nav-item" onclick="showSection('tournoi',this)"><div class="nav-icon">🏆</div>Tournoi</div>
   </nav>
 </div>
@@ -535,6 +636,7 @@ function showSection(name,el){
   if(name==='editors')renderEditors();
   if(name==='tournoi')renderTournoi();
   if(name==='review')renderReview();
+  if(name==='score')initScoreSetup();
 }
 
 // ── ALERTES ──────────────────────────────────────────────────────
@@ -986,6 +1088,235 @@ function exportJSON(){
   dlFile('ludiverse_backup.json','data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify({games,tournoi},null,2)));
 }
 function dlFile(name,href){const a=document.createElement('a');a.href=href;a.download=name;a.click();toast('⬇ Export en cours...');}
+
+// ── COMPTEUR DE SCORE ────────────────────────────────────────────
+const DEFAULT_PLAYERS=['Papa','Maman','Chloé','Camille'];
+let scPlayers=[];      // joueurs sélectionnés
+let scScores={};       // totaux par joueur
+let scHistory=[];      // historique des manches [{joueur:score}]
+let scManche=1;
+let scRule='high';
+let scJeu='';
+let scTimerDuration=0;
+let scTimerRemaining=0;
+let scTimerInterval=null;
+let scTimerRunning=false;
+
+function initScoreSetup(){
+  const chips=document.getElementById('sc-players-chips');
+  chips.innerHTML=DEFAULT_PLAYERS.map(p=>`<button class="player-chip-sel" style="background:${(PCOLORS[p]||'#8899bb')+'33'};border-color:${PCOLORS[p]||'#8899bb'}44;color:${PCOLORS[p]||'var(--text2)'}" onclick="toggleScorePlayer('${p}',this)">${p}</button>`).join('');
+}
+
+function toggleScorePlayer(name,btn){
+  if(scPlayers.includes(name)){scPlayers=scPlayers.filter(p=>p!==name);btn.classList.remove('on');btn.style.background=(PCOLORS[name]||'#8899bb')+'33';}
+  else{scPlayers.push(name);btn.classList.add('on');btn.style.background=PCOLORS[name]||'#8b5bc8';}
+}
+
+function addCustomPlayer(){
+  const inp=document.getElementById('sc-custom-player');
+  const name=inp.value.trim();
+  if(!name)return;
+  if(scPlayers.includes(name)){toast('Joueur déjà ajouté');return;}
+  scPlayers.push(name);
+  const chips=document.getElementById('sc-players-chips');
+  const btn=document.createElement('button');
+  btn.className='player-chip-sel on';
+  btn.style.background='#8b5bc8';btn.style.borderColor='#8b5bc8';btn.style.color='white';
+  btn.textContent=name;
+  btn.onclick=()=>toggleScorePlayer(name,btn);
+  chips.appendChild(btn);
+  inp.value='';
+}
+
+function toggleCustomTimer(){
+  const v=document.getElementById('sc-timer-duration').value;
+  document.getElementById('sc-timer-custom').style.display=v==='custom'?'block':'none';
+}
+
+function startGame(){
+  const jeu=document.getElementById('sc-jeu').value.trim();
+  if(!jeu){toast('⚠ Nom du jeu obligatoire');return;}
+  if(scPlayers.length<2){toast('⚠ Sélectionne au moins 2 joueurs');return;}
+  scJeu=jeu;
+  scRule=document.getElementById('sc-rule').value;
+  scScores={};scHistory=[];scManche=1;
+  scPlayers.forEach(p=>scScores[p]=0);
+  const timerSel=document.getElementById('sc-timer-duration').value;
+  scTimerDuration=timerSel==='custom'?parseInt(document.getElementById('sc-timer-custom').value)||0:parseInt(timerSel);
+  scTimerRemaining=scTimerDuration;
+  document.getElementById('score-setup-panel').style.display='none';
+  document.getElementById('score-game-panel').style.display='block';
+  if(scTimerDuration>0){document.getElementById('sc-timer-display').style.display='block';updateTimerDisplay();}
+  renderScoreTable();
+}
+
+function renderScoreTable(){
+  const sorted=[...scPlayers].sort((a,b)=>scRule==='high'?scScores[b]-scScores[a]:scScores[a]-scScores[b]);
+  const leader=sorted[0];
+  const cols=scPlayers.length+2;
+  const colStyle=`grid-template-columns:1fr repeat(${scPlayers.length},60px) 70px`;
+
+  let html=`<div class="score-header">
+    <div class="score-game-name">${scJeu}</div>
+    <div class="score-game-meta">
+      <span class="score-manche-badge">Manche ${scManche}</span>
+      <span>${scRule==='high'?'🔼 Plus haut gagne':'🔽 Plus bas gagne'}</span>
+    </div>
+  </div>
+  <div class="score-table">
+    <div class="score-table-head" style="${colStyle}">
+      <span>Joueur</span>
+      ${scHistory.length?scHistory.map((_,i)=>`<span style="text-align:center">M${i+1}</span>`).join(''):'<span></span>'}
+      <span style="text-align:right">Total</span>
+    </div>`;
+
+  sorted.forEach(p=>{
+    const isLeader=p===leader;
+    html+=`<div class="score-table-row ${isLeader?'leader':''}" style="${colStyle}">
+      <div class="score-player-name">${isLeader?'👑':''}<span style="color:${PCOLORS[p]||'var(--text)'}">${p}</span></div>
+      ${scHistory.length?scHistory.map(m=>`<div class="score-delta">${m[p]!==undefined?(m[p]>0?'+':'')+m[p]:'–'}</div>`).join(''):'<div></div>'}
+      <div class="score-total ${isLeader?'leader':''}">${scScores[p]}</div>
+    </div>`;
+  });
+
+  // Ligne de saisie
+  html+=`<div class="score-input-row" style="${colStyle}">
+    <div style="font-size:12px;font-weight:700;color:var(--text2)">Manche ${scManche}</div>
+    ${scPlayers.map(p=>`<input class="score-input" id="sc-inp-${p.replace(/\s/g,'_')}" type="number" placeholder="0" inputmode="numeric"/>`).join('')}
+    <div></div>
+  </div>`;
+
+  html+=`</div>`;
+  document.getElementById('sc-table').innerHTML=html;
+  // Focus premier champ
+  setTimeout(()=>{const first=document.querySelector('.score-input');if(first)first.focus();},100);
+}
+
+function validerManche(){
+  const mancheScores={};
+  let valid=true;
+  scPlayers.forEach(p=>{
+    const inp=document.getElementById('sc-inp-'+p.replace(/\s/g,'_'));
+    const val=inp?parseInt(inp.value):NaN;
+    if(isNaN(val)){valid=false;if(inp)inp.style.borderColor='#e84b4b';}
+    else mancheScores[p]=val;
+  });
+  if(!valid){toast('⚠ Entre un score pour chaque joueur');return;}
+  scHistory.push(mancheScores);
+  scPlayers.forEach(p=>scScores[p]=(scScores[p]||0)+mancheScores[p]);
+  scManche++;
+  if(scTimerDuration>0)timerReset();
+  renderScoreTable();
+  toast(`✓ Manche ${scManche-1} validée !`);
+}
+
+function annulerManche(){
+  if(!scHistory.length){toast('Aucune manche à annuler');return;}
+  const last=scHistory.pop();
+  scPlayers.forEach(p=>scScores[p]-=last[p]||0);
+  scManche--;
+  renderScoreTable();
+  toast('↩ Dernière manche annulée');
+}
+
+function terminerPartie(){
+  if(!scHistory.length){
+    if(!confirm('Aucune manche enregistrée. Terminer quand même ?'))return;
+  }
+  // Déterminer le gagnant
+  const sorted=[...scPlayers].sort((a,b)=>scRule==='high'?scScores[b]-scScores[a]:scScores[a]-scScores[b]);
+  const winner=sorted[0];
+  showWinnerModal(winner,sorted);
+}
+
+function showWinnerModal(winner,sorted){
+  const wcolor=PCOLORS[winner]||'#f5c842';
+  const modal=document.createElement('div');
+  modal.className='winner-modal-overlay';
+  modal.id='winner-modal';
+  modal.innerHTML=`<div class="winner-modal">
+    <div class="winner-trophy">🏆</div>
+    <div class="winner-title">Vainqueur !</div>
+    <div class="winner-name" style="color:${wcolor}">${winner}</div>
+    <div class="winner-scores">
+      ${sorted.map((p,i)=>`<div class="winner-score-row ${i===0?'first':''}">
+        <span class="winner-score-name">${['🥇','🥈','🥉'][i]||'  '} ${p}</span>
+        <span class="winner-score-val">${scScores[p]} pts</span>
+      </div>`).join('')}
+    </div>
+    <div class="winner-actions">
+      <button class="btn-primary" onclick="saveToTournoi('${winner}')">🏆 Ajouter au Tournoi</button>
+      <button class="btn-ghost" style="width:100%;padding:11px;text-align:center" onclick="nouvellePartie()">🎲 Nouvelle partie</button>
+      <button class="btn-ghost red" style="width:100%;padding:11px;text-align:center" onclick="closeWinnerModal()">✕ Fermer</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  if(scTimerInterval){clearInterval(scTimerInterval);scTimerInterval=null;scTimerRunning=false;}
+}
+
+function saveToTournoi(winner){
+  const date=new Date().toISOString().split('T')[0];
+  const annee=parseInt(date.split('-')[0]);
+  tournoi.push({
+    id:'t'+Date.now(),date,annee,
+    parties:[{jeu:scJeu,gagnants:[winner],score:scScores[winner]}]
+  });
+  saveTournoi();
+  closeWinnerModal();
+  toast('🏆 Victoire ajoutée au Tournoi !');
+  nouvellePartie();
+}
+
+function closeWinnerModal(){
+  const m=document.getElementById('winner-modal');if(m)m.remove();
+}
+
+function nouvellePartie(){
+  closeWinnerModal();
+  scPlayers=[];scScores={};scHistory=[];scManche=1;
+  if(scTimerInterval){clearInterval(scTimerInterval);scTimerInterval=null;}
+  scTimerRunning=false;
+  document.getElementById('score-setup-panel').style.display='block';
+  document.getElementById('score-game-panel').style.display='none';
+  document.getElementById('sc-timer-display').style.display='none';
+  document.getElementById('sc-jeu').value='';
+  document.getElementById('sc-timer-duration').value='0';
+  document.getElementById('sc-timer-custom').style.display='none';
+  // Reset chips
+  document.querySelectorAll('.player-chip-sel').forEach(btn=>{
+    btn.classList.remove('on');
+    const name=btn.textContent;
+    btn.style.background=(PCOLORS[name]||'#8899bb')+'33';
+  });
+}
+
+// ── TIMER ────────────────────────────────────────────────────────
+function updateTimerDisplay(){
+  const m=Math.floor(scTimerRemaining/60).toString().padStart(2,'0');
+  const s=(scTimerRemaining%60).toString().padStart(2,'0');
+  const el=document.getElementById('sc-timer-val');
+  if(!el)return;
+  el.textContent=`${m}:${s}`;
+  el.className='timer-time'+(scTimerRemaining<=10?' danger':scTimerRemaining<=30?' warning':'');
+  document.getElementById('sc-timer-start-btn').textContent=scTimerRunning?'⏸ Pause':'▶ Démarrer';
+}
+function timerToggle(){
+  if(scTimerRunning){clearInterval(scTimerInterval);scTimerInterval=null;scTimerRunning=false;}
+  else{
+    if(scTimerRemaining<=0)scTimerRemaining=scTimerDuration;
+    scTimerRunning=true;
+    scTimerInterval=setInterval(()=>{
+      scTimerRemaining--;updateTimerDisplay();
+      if(scTimerRemaining<=0){clearInterval(scTimerInterval);scTimerInterval=null;scTimerRunning=false;toast('⏱ Temps écoulé !');}
+    },1000);
+  }
+  updateTimerDisplay();
+}
+function timerReset(){
+  if(scTimerInterval){clearInterval(scTimerInterval);scTimerInterval=null;}
+  scTimerRunning=false;scTimerRemaining=scTimerDuration;updateTimerDisplay();
+  document.getElementById('sc-timer-start-btn').textContent='▶ Démarrer';
+}
 
 load();
 </script>
