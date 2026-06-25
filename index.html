@@ -217,7 +217,6 @@ select{background:var(--card);color:var(--text);border:1px solid var(--border);b
       <input class="search-bar" id="search" placeholder="🔍 Rechercher un jeu…" oninput="renderListe()"/>
       <div class="filter-row">
         <select id="f-month" onchange="renderListe()"><option value="">✦ Tous les mois</option></select>
-        <select id="f-editor" onchange="renderListe()"><option value="">✦ Tous les éditeurs</option></select>
         <select id="f-status" onchange="renderListe()">
           <option value="">✦ Tous</option>
           <option value="published">✅ Publié</option>
@@ -599,12 +598,10 @@ function scheduleNotifications(){
 // ── LISTE ────────────────────────────────────────────────────────
 function renderListe(){
   const fm=document.getElementById('f-month').value;
-  const fe=document.getElementById('f-editor').value;
   const fs=document.getElementById('f-status').value;
   const q=document.getElementById('search').value.toLowerCase().trim();
   const f=games.filter(g=>
     (!fm||g.mois===fm)&&
-    (!fe||g.editeur===fe)&&
     (!fs||(fs==='published'?g.published===1:fs==='noreview'?g.published===2:g.published===0))&&
     (!q||g.nom.toLowerCase().includes(q)||g.editeur.toLowerCase().includes(q))
   );
