@@ -756,6 +756,7 @@ function renderDerniersJeux(){
 
 function renderListe(){
   renderDerniersJeux();
+  const fm=document.getElementById('f-month').value;
   const fs=document.getElementById('f-status').value;
   const q=document.getElementById('search').value.toLowerCase().trim();
   const f=games.filter(g=>
