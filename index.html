@@ -260,6 +260,7 @@ select{background:var(--card);color:var(--text);border:1px solid var(--border);b
     <div id="sec-liste" class="section active">
       <div id="install-zone"></div>
       <div id="alert-zone"></div>
+      <div id="derniers-zone"></div>
       <input class="search-bar" id="search" placeholder="🔍 Rechercher un jeu…" oninput="renderListe()"/>
       <div class="filter-row">
         <select id="f-month" onchange="renderListe()"><option value="">✦ Tous les mois</option></select>
@@ -485,7 +486,24 @@ select{background:var(--card);color:var(--text);border:1px solid var(--border);b
 <div class="toast" id="toast"></div>
 
 <script>
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    // Détecte une nouvelle version disponible
+    reg.addEventListener('updatefound', () => {
+      const newWorker = reg.installing;
+      newWorker.addEventListener('statechange', () => {
+        if(newWorker.state === 'activated'){
+          // Nouvelle version active → on recharge
+          window.location.reload();
+        }
+      });
+    });
+  }).catch(()=>{});
+  // Si le SW prend le contrôle (après une mise à jour), on recharge
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    window.location.reload();
+  });
+}
 let deferredPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;showInstallBanner();});
 function showInstallBanner(){
@@ -698,8 +716,43 @@ function scheduleNotifications(){
 }
 
 // ── LISTE ────────────────────────────────────────────────────────
+function getLastMois(){
+  const mois=[...new Set(games.map(g=>g.mois))].sort().reverse();
+  return mois[0]||null;
+}
+
+function renderDerniersJeux(){
+  const lastMois=getLastMois();
+  if(!lastMois)return;
+  const derniers=games.filter(g=>g.mois===lastMois);
+  const total=derniers.reduce((s,g)=>s+px(g),0);
+  const z=document.getElementById('derniers-zone');
+  z.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-family:'Bangers',cursive;font-size:17px;color:var(--gold);letter-spacing:.5px">📦 ${fmtM(lastMois)}</div>
+      <div style="font-size:12px;color:var(--text2)">${derniers.length} jeux · ${total.toFixed(2)} €</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">
+      ${derniers.map(g=>`
+        <div style="background:var(--card);border:1px solid rgba(107,63,160,.3);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <div>
+            <div style="font-size:13px;font-weight:800;color:var(--text)">${g.nom}</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:2px">${g.editeur}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+            <div style="font-family:'Bangers',cursive;font-size:15px;color:var(--gold)">${g.prix&&g.prix!='0'?parseFloat(g.prix).toFixed(2)+' €':'—'}</div>
+            ${g.published===1?`<span class="tag tag-pub" style="font-size:9px;padding:1px 7px">✅</span>`
+            :g.published===2?`<span class="tag tag-noreview" style="font-size:9px;padding:1px 7px">🚫</span>`
+            :`<span class="tag tag-wait" style="font-size:9px;padding:1px 7px">⏳</span>`}
+          </div>
+        </div>`).join('')}
+    </div>
+    <div style="height:1px;background:var(--border);margin-bottom:14px"></div>
+  `;
+}
+
 function renderListe(){
-  const fm=document.getElementById('f-month').value;
+  renderDerniersJeux();
   const fs=document.getElementById('f-status').value;
   const q=document.getElementById('search').value.toLowerCase().trim();
   const f=games.filter(g=>
