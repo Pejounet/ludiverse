@@ -1,6 +1,6 @@
-const CACHE = 'ludiverse-v5';
+const CACHE = 'ludiverse-v6';
 const ASSETS = [
-  './index.html',
+  './app.html',
   './manifest.json',
   'https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800&display=swap',
   'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js'
@@ -27,7 +27,7 @@ self.addEventListener('activate', e => {
 // Fetch : réseau en priorité, cache en fallback
 self.addEventListener('fetch', e => {
   // Pour index.html : toujours essayer le réseau en premier
-  if(e.request.url.includes('index.html') || e.request.mode === 'navigate') {
+  if(e.request.url.includes('app.html') || e.request.mode === 'navigate') {
     e.respondWith(
       fetch(e.request).then(resp => {
         const clone = resp.clone();

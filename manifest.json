@@ -2,7 +2,7 @@
   "name": "Le Ludiverse – Jeux Presse",
   "short_name": "Ludiverse",
   "description": "Suivi des jeux de société reçus par la presse",
-  "start_url": "./index.html",
+  "start_url": "./app.html",
   "display": "standalone",
   "background_color": "#0d1628",
   "theme_color": "#0d1628",
