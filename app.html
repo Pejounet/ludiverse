@@ -323,7 +323,13 @@ select{background:var(--card);color:var(--text);border:1px solid var(--border);b
         <div class="form-title">🚀 Nouveau jeu</div>
         <div class="field"><label>Nom du jeu *</label><input id="i-nom" placeholder="Ex: Wingspan" autocomplete="off"/></div>
         <div class="row2">
-          <div class="field"><label>Éditeur *</label><input id="i-ed" list="ed-list" placeholder="Ex: Iello" autocomplete="off"/><datalist id="ed-list"></datalist></div>
+          <div class="field"><label>Éditeur *</label>
+            <select id="i-ed" onchange="toggleNewEditor()">
+              <option value="">— Choisir —</option>
+              <option value="__new__">✏️ Nouvel éditeur…</option>
+            </select>
+            <input id="i-ed-new" placeholder="Nom de l'éditeur" autocomplete="off" style="display:none;margin-top:6px;width:100%;background:var(--navy2);color:var(--text);border:1px solid rgba(245,200,66,.18);border-radius:8px;padding:9px 12px;font-size:16px;font-family:'Nunito',sans-serif;outline:none"/>
+          </div>
           <div class="field"><label>Prix (€)</label><input id="i-prix" type="number" placeholder="0.00" step="0.01" min="0"/></div>
         </div>
         <div class="row2">
@@ -349,6 +355,7 @@ select{background:var(--card);color:var(--text);border:1px solid var(--border);b
         <button class="btn-export" onclick="exportCSV()">⬇ Export CSV</button>
         <button class="btn-export" onclick="exportJSON()">⬇ Sauvegarde JSON</button>
       </div>
+      <button onclick="resetApp()" style="width:100%;padding:11px;background:rgba(232,75,75,.1);color:#f08080;border:1px solid rgba(232,75,75,.25);border-radius:9px;font-size:12px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;margin-bottom:14px">🔄 Réinitialiser les données (recharge les jeux par défaut)</button>
       <div style="margin-top:8px;margin-bottom:14px">
         <button onclick="resetData()" style="width:100%;padding:10px;background:transparent;color:rgba(232,75,75,.6);border:1px solid rgba(232,75,75,.2);border-radius:9px;font-size:12px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer">🔄 Réinitialiser les données (recharge les jeux par défaut)</button>
       </div>
@@ -592,7 +599,17 @@ const INIT_TOURNOI=[
 ];
 
 function load(){
-  try{const s=localStorage.getItem(KEY);if(s)games=JSON.parse(s);else{games=INIT.map(g=>({...g}));localStorage.setItem(KEY,JSON.stringify(games));}}catch(e){games=INIT.map(g=>({...g}));}
+  try{
+    const s=localStorage.getItem(KEY);
+    if(s){
+      games=JSON.parse(s);
+      // Migration : ajouter published si manquant
+      games=games.map(g=>({...g,published:g.published??0,pubdate:g.pubdate??''}));
+    }else{
+      games=INIT.map(g=>({...g}));
+      localStorage.setItem(KEY,JSON.stringify(games));
+    }
+  }catch(e){games=INIT.map(g=>({...g}));}
   try{const t=localStorage.getItem(TKEY);if(t)tournoi=JSON.parse(t);else{tournoi=[...INIT_TOURNOI];localStorage.setItem(TKEY,JSON.stringify(tournoi));}}catch(e){tournoi=[...INIT_TOURNOI];}
   notifEnabled=localStorage.getItem('notif_enabled')==='1';
   updateNotifBtn();
@@ -638,14 +655,20 @@ function init(){
 function populateFilters(){
   const eds=[...new Set(games.map(g=>g.editeur))].sort();
   const mos=[...new Set(games.map(g=>g.mois))].sort().reverse();
-  const es=document.getElementById('f-editor'),pe=es.value;
-  es.innerHTML='<option value="">✦ Tous les éditeurs</option>';
-  eds.forEach(e=>{const o=document.createElement('option');o.value=e;o.textContent=e;es.appendChild(o);});es.value=pe;
+  const es=document.getElementById('f-editor');
+  if(es){const pe=es.value;es.innerHTML='<option value="">✦ Tous les éditeurs</option>';eds.forEach(e=>{const o=document.createElement('option');o.value=e;o.textContent=e;es.appendChild(o);});es.value=pe;}
   const ms=document.getElementById('f-month'),pm=ms.value;
   ms.innerHTML='<option value="">✦ Tous les mois</option>';
   mos.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=fmtM(m);ms.appendChild(o);});ms.value=pm;
-  const dl=document.getElementById('ed-list');dl.innerHTML='';
-  eds.forEach(e=>{const o=document.createElement('option');o.value=e;dl.appendChild(o);});
+  // Alimenter le select éditeur du formulaire
+  const ied=document.getElementById('i-ed');
+  const prev=ied.value;
+  ied.innerHTML='<option value="">— Choisir —</option>';
+  eds.forEach(e=>{const o=document.createElement('option');o.value=e;o.textContent=e;ied.appendChild(o);});
+  ied.innerHTML+='<option value="__new__">✏️ Nouvel éditeur…</option>';
+  if(prev&&prev!=='__new__')ied.value=prev;
+  // Datalist pour le modal edit
+  const dl=document.getElementById('ed-list');if(dl){dl.innerHTML='';eds.forEach(e=>{const o=document.createElement('option');o.value=e;dl.appendChild(o);});}
 }
 
 function showSection(name,el){
@@ -1100,13 +1123,29 @@ function deleteSession(id){
 }
 
 // ── JEUX ─────────────────────────────────────────────────────────
+function toggleNewEditor(){
+  const sel=document.getElementById('i-ed');
+  const inp=document.getElementById('i-ed-new');
+  inp.style.display=sel.value==='__new__'?'block':'none';
+  if(sel.value==='__new__')inp.focus();
+}
+
+function getEditeurValue(){
+  const sel=document.getElementById('i-ed');
+  if(sel.value==='__new__')return document.getElementById('i-ed-new').value.trim();
+  return sel.value;
+}
+
 function addGame(){
   const nom=document.getElementById('i-nom').value.trim();
-  const editeur=document.getElementById('i-ed').value.trim();
+  const editeur=getEditeurValue();
   if(!nom||!editeur){toast('⚠ Nom et éditeur obligatoires');return;}
   games.push({id:Date.now().toString(),nom,editeur,prix:document.getElementById('i-prix').value||'0',mois:document.getElementById('i-mois').value,joueurs:document.getElementById('i-joueurs').value.trim(),age:document.getElementById('i-age').value.trim(),note:document.getElementById('i-note').value,notes:document.getElementById('i-notes').value.trim(),published:0,pubdate:''});
   save();populateFilters();
-  ['i-nom','i-ed','i-prix','i-joueurs','i-age','i-notes'].forEach(id=>document.getElementById(id).value='');
+  ['i-nom','i-prix','i-joueurs','i-age','i-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('i-ed').value='';
+  document.getElementById('i-ed-new').value='';
+  document.getElementById('i-ed-new').style.display='none';
   document.getElementById('i-note').value='';
   toast('✦ Jeu ajouté !');
   showSection('liste',document.querySelector('.nav-item'));
@@ -1145,6 +1184,14 @@ function exportJSON(){
   dlFile('ludiverse_backup.json','data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify({games,tournoi},null,2)));
 }
 function dlFile(name,href){const a=document.createElement('a');a.href=href;a.download=name;a.click();toast('⬇ Export en cours...');}
+
+function resetApp(){
+  if(!confirm('Réinitialiser toutes les données ? Tes jeux ajoutés manuellement seront perdus.'))return;
+  localStorage.removeItem(KEY);
+  localStorage.removeItem(TKEY);
+  toast('🔄 Réinitialisation...');
+  setTimeout(()=>window.location.reload(),800);
+}
 
 function resetData(){
   if(!confirm('Réinitialiser toutes les données ? Les jeux du CSV de départ seront rechargés. Cette action est irréversible.'))return;
