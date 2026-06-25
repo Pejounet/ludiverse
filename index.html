@@ -85,6 +85,7 @@ select{background:var(--card);color:var(--text);border:1px solid var(--border);b
 .tag-pub{background:rgba(76,175,125,.2);color:#7dd4a8;border:1px solid rgba(76,175,125,.35)}
 .tag-nopub{background:rgba(232,75,75,.15);color:#f08080;border:1px solid rgba(232,75,75,.25)}
 .tag-wait{background:rgba(245,200,66,.1);color:var(--gold);border:1px solid rgba(245,200,66,.2)}
+.tag-noreview{background:rgba(136,153,187,.12);color:var(--text2);border:1px solid rgba(136,153,187,.2)}
 .game-note-text{font-size:11px;color:var(--text2);margin-top:7px;font-style:italic;border-left:2px solid var(--purple2);padding-left:8px}
 .game-actions{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
 .btn-ghost{font-size:11px;font-weight:700;padding:5px 11px;cursor:pointer;border:1px solid rgba(255,255,255,.12);border-radius:7px;background:transparent;color:var(--text2);font-family:'Nunito',sans-serif}
@@ -221,6 +222,7 @@ select{background:var(--card);color:var(--text);border:1px solid var(--border);b
           <option value="">✦ Tous</option>
           <option value="published">✅ Publié</option>
           <option value="pending">⏳ En attente</option>
+          <option value="noreview">🚫 Pas de review</option>
         </select>
       </div>
       <div class="stat-grid" id="stats-liste"></div>
@@ -370,8 +372,9 @@ select{background:var(--card);color:var(--text);border:1px solid var(--border);b
     <div class="field"><label>Remarques</label><input id="e-notes" autocomplete="off"/></div>
     <div class="field"><label>Statut review</label>
       <select id="e-published">
-        <option value="0">⏳ Non publié</option>
+        <option value="0">⏳ En attente</option>
         <option value="1">✅ Publié</option>
+        <option value="2">🚫 Pas de review</option>
       </select>
     </div>
     <div class="field" id="e-pubdate-field"><label>Date de publication</label><input type="date" id="e-pubdate"/></div>
@@ -537,7 +540,7 @@ function showSection(name,el){
 
 // ── ALERTES ──────────────────────────────────────────────────────
 function getOverdue(){
-  return games.filter(g=>!g.published&&daysSince(g.mois)>REVIEW_DELAY_DAYS);
+  return games.filter(g=>g.published===0&&daysSince(g.mois)>REVIEW_DELAY_DAYS);
 }
 function checkAlerts(){
   const overdue=getOverdue();
@@ -602,11 +605,11 @@ function renderListe(){
   const f=games.filter(g=>
     (!fm||g.mois===fm)&&
     (!fe||g.editeur===fe)&&
-    (!fs||(fs==='published'?g.published:!g.published))&&
+    (!fs||(fs==='published'?g.published===1:fs==='noreview'?g.published===2:g.published===0))&&
     (!q||g.nom.toLowerCase().includes(q)||g.editeur.toLowerCase().includes(q))
   );
   const total=f.reduce((s,g)=>s+px(g),0);
-  const pub=f.filter(g=>g.published).length;
+  const pub=f.filter(g=>g.published===1).length;
   document.getElementById('stats-liste').innerHTML=`
     <div class="stat-card"><div class="stat-label">Jeux filtrés</div><div class="stat-value">${f.length}</div><div class="stat-sub">${new Set(f.map(g=>g.editeur)).size} éditeurs</div></div>
     <div class="stat-card"><div class="stat-label">Valeur</div><div class="stat-value">${total.toFixed(0)} €</div><div class="stat-sub">${pub} publié${pub>1?'s':''}</div></div>
@@ -615,11 +618,13 @@ function renderListe(){
   if(!f.length){c.innerHTML='<div class="empty"><span class="empty-icon">🚀</span>Aucun jeu trouvé</div>';return;}
   const now=Date.now();
   c.innerHTML=f.sort((a,b)=>b.mois.localeCompare(a.mois)).map(g=>{
-    const overdue=!g.published&&daysSince(g.mois)>REVIEW_DELAY_DAYS;
-    const statusTag=g.published
+    const overdue=g.published===0&&daysSince(g.mois)>REVIEW_DELAY_DAYS;
+    const statusTag=g.published===1
       ?`<span class="tag tag-pub">✅ Publié${g.pubdate?' · '+fmtDate(g.pubdate):''}</span>`
-      :(overdue?`<span class="tag tag-nopub">⚠️ En retard</span>`:`<span class="tag tag-wait">⏳ En attente</span>`);
-    return `<div class="game-card ${g.published?'published':overdue?'overdue':''}">
+      :g.published===2
+        ?`<span class="tag tag-noreview">🚫 Pas de review</span>`
+        :(overdue?`<span class="tag tag-nopub">⚠️ En retard</span>`:`<span class="tag tag-wait">⏳ En attente</span>`);
+    return `<div class="game-card ${g.published===1?'published':overdue?'overdue':''}">
       <div class="game-card-top">
         <div><div class="game-title">${g.nom}</div><div class="game-meta">${[g.joueurs?g.joueurs+' joueurs':null,g.age||null,fmtM(g.mois)].filter(Boolean).join(' · ')}</div></div>
         <div class="game-price">${g.prix&&g.prix!='0'?parseFloat(g.prix).toFixed(2)+' €':'—'}</div>
@@ -633,7 +638,9 @@ function renderListe(){
       ${g.notes?`<div class="game-note-text">${g.notes}</div>`:''}
       <div class="game-actions">
         <button class="btn-ghost gold" onclick="openEdit('${g.id}')">✏️ Modifier</button>
-        ${!g.published?`<button class="btn-ghost green" onclick="togglePublished('${g.id}')">✅ Publié</button>`:`<button class="btn-ghost" onclick="togglePublished('${g.id}')">↩ Dépublier</button>`}
+        ${g.published===0?`<button class="btn-ghost green" onclick="togglePublished('${g.id}',1)">✅ Publié</button><button class="btn-ghost" onclick="togglePublished('${g.id}',2)" style="font-size:10px">🚫 Sans review</button>`
+        :g.published===1?`<button class="btn-ghost" onclick="togglePublished('${g.id}',0)">↩ Réinitialiser</button>`
+        :`<button class="btn-ghost" onclick="togglePublished('${g.id}',0)">↩ Réinitialiser</button>`}
         <button class="btn-ghost red" onclick="del('${g.id}')">✕</button>
       </div>
     </div>`;
@@ -652,7 +659,7 @@ function openEdit(id){
   document.getElementById('e-age').value=g.age||'';
   document.getElementById('e-note').value=g.note||'';
   document.getElementById('e-notes').value=g.notes||'';
-  document.getElementById('e-published').value=g.published?'1':'0';
+  document.getElementById('e-published').value=g.published===1?'1':g.published===2?'2':'0';
   document.getElementById('e-pubdate').value=g.pubdate||'';
   document.getElementById('edit-modal').style.display='flex';
 }
@@ -672,16 +679,18 @@ function saveEdit(){
   g.notes=document.getElementById('e-notes').value.trim();
   g.published=parseInt(document.getElementById('e-published').value);
   g.pubdate=document.getElementById('e-pubdate').value;
+  if(g.published===1&&!g.pubdate)g.pubdate=new Date().toISOString().split('T')[0];
   save();populateFilters();renderListe();checkAlerts();updatePendingBadge();
   document.getElementById('edit-modal').style.display='none';editingId=null;
   toast('💾 Jeu mis à jour !');
 }
-function togglePublished(id){
+function togglePublished(id,status){
   const g=games.find(x=>x.id===id);if(!g)return;
-  g.published=g.published?0:1;
-  if(g.published&&!g.pubdate)g.pubdate=new Date().toISOString().split('T')[0];
+  g.published=status;
+  if(g.published===1&&!g.pubdate)g.pubdate=new Date().toISOString().split('T')[0];
+  if(g.published!==1)g.pubdate='';
   save();renderListe();checkAlerts();updatePendingBadge();
-  toast(g.published?'✅ Marqué comme publié !':'↩ Dépublié');
+  toast(g.published===1?'✅ Marqué comme publié !':g.published===2?'🚫 Pas de review':' ↩ Réinitialisé');
 }
 
 // ── REVIEW STATS ─────────────────────────────────────────────────
@@ -690,9 +699,11 @@ function renderReview(){
   if(!years.includes(String(rvYear))&&years.length)rvYear=parseInt(years[0]);
   document.getElementById('rv-year-chips').innerHTML=years.map(y=>`<button class="chip ${y==rvYear?'on':''}" onclick="setRVY(${y})">${y}</button>`).join('');
   const fy=games.filter(g=>g.mois?.startsWith(rvYear+''));
-  const pub=fy.filter(g=>g.published).length;
+  const pub=fy.filter(g=>g.published===1).length;
+  const noreview=fy.filter(g=>g.published===2).length;
+  const pending=fy.filter(g=>g.published===0);
   const pct=fy.length?Math.round(pub/fy.length*100):0;
-  const overdue=fy.filter(g=>!g.published&&daysSince(g.mois)>REVIEW_DELAY_DAYS).length;
+  const overdue=pending.filter(g=>daysSince(g.mois)>REVIEW_DELAY_DAYS).length;
   document.getElementById('rv-stats').innerHTML=`
     <div class="stat-card"><div class="stat-label">Reçus</div><div class="stat-value">${fy.length}</div><div class="stat-sub">${rvYear}</div></div>
     <div class="stat-card green"><div class="stat-label">Publiés</div><div class="stat-value green">${pub}</div><div class="stat-sub">${pct}% du total</div></div>
@@ -714,23 +725,23 @@ function renderReview(){
   if(cRvPie)cRvPie.destroy();
   cRvPie=new Chart(document.getElementById('c-review-pie'),{
     type:'doughnut',
-    data:{labels:['Publiés','En attente'],datasets:[{data:[pub,fy.length-pub],backgroundColor:['rgba(76,175,125,.8)','rgba(139,91,200,.6)'],borderColor:['#4caf7d','#8b5bc8'],borderWidth:2}]},
+    data:{labels:['Publiés','En attente','Pas de review'],datasets:[{data:[pub,pending.length,noreview],backgroundColor:['rgba(76,175,125,.8)','rgba(139,91,200,.6)','rgba(136,153,187,.4)'],borderColor:['#4caf7d','#8b5bc8','#8899bb'],borderWidth:2}]},
     options:{responsive:true,plugins:{legend:{labels:{color:'#e8eaf6',font:{size:12}}}}}
   });
   // Liste en attente
-  const pending=fy.filter(g=>!g.published).sort((a,b)=>a.mois.localeCompare(b.mois));
   document.getElementById('rv-pending-list').innerHTML=!pending.length
-    ?'<div class="empty"><span class="empty-icon">✅</span>Tout est publié !</div>'
-    :pending.map(g=>{
+    ?'<div class="empty"><span class="empty-icon">✅</span>Tout est traité !</div>'
+    :pending.sort((a,b)=>a.mois.localeCompare(b.mois)).map(g=>{
       const days=daysSince(g.mois);
-      const overdue=days>REVIEW_DELAY_DAYS;
-      return `<div class="game-card ${overdue?'overdue':''}">
+      const od=days>REVIEW_DELAY_DAYS;
+      return `<div class="game-card ${od?'overdue':''}">
         <div class="game-card-top">
           <div><div class="game-title">${g.nom}</div><div class="game-meta">${g.editeur} · ${fmtM(g.mois)}</div></div>
-          <div style="font-size:11px;color:${overdue?'#f08080':'var(--text2)'};white-space:nowrap">${Math.floor(days/30)}m ${days%30}j</div>
+          <div style="font-size:11px;color:${od?'#f08080':'var(--text2)'};white-space:nowrap">${Math.floor(days/30)}m ${days%30}j</div>
         </div>
         <div class="game-actions">
-          <button class="btn-ghost green" onclick="togglePublished('${g.id}')">✅ Marquer publié</button>
+          <button class="btn-ghost green" onclick="togglePublished('${g.id}',1)">✅ Publié</button>
+          <button class="btn-ghost" onclick="togglePublished('${g.id}',2)" style="font-size:10px">🚫 Sans review</button>
           <button class="btn-ghost gold" onclick="openEdit('${g.id}')">✏️</button>
         </div>
       </div>`;
